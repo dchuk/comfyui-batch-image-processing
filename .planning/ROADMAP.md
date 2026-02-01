@@ -28,11 +28,11 @@ Decimal phases appear between their surrounding integers in numeric order.
   2. User can specify a directory path and see images loaded in natural sort order (img2 before img10)
   3. User can filter images using glob patterns (e.g., `*.png`)
   4. Node outputs current image, total count, and current filename as separate outputs
-**Plans**: TBD
+**Plans:** 2 plans
 
 Plans:
-- [ ] 01-01: TBD (node registration and project structure)
-- [ ] 01-02: TBD (image loading and sorting)
+- [ ] 01-01-PLAN.md - Project structure, node registration, utilities (natural sort, image loading)
+- [ ] 01-02-PLAN.md - Complete BatchImageLoader implementation with filtering and validation
 
 ### Phase 2: Image Saving
 **Goal**: Users can save processed images with customizable output paths and filenames
@@ -85,7 +85,7 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 1. Foundation | 0/2 | Not started | - |
+| 1. Foundation | 0/2 | Planned | - |
 | 2. Image Saving | 0/2 | Not started | - |
 | 3. Batch Iteration | 0/2 | Not started | - |
 | 4. Progress & Monitoring | 0/2 | Not started | - |
