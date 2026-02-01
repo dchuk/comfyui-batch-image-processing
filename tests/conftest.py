@@ -89,3 +89,10 @@ def comfyui_mock():
     """
     # Placeholder - will be expanded when testing actual node execution
     return {}
+
+
+@pytest.fixture
+def temp_output_dir():
+    """Create a temporary output directory for save tests."""
+    with tempfile.TemporaryDirectory() as tmpdir:
+        yield tmpdir
