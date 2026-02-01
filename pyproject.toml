@@ -1,0 +1,49 @@
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "comfyui-batch-image-processing"
+version = "0.1.0"
+description = "ComfyUI custom nodes for batch processing images through pipelines"
+readme = "README.md"
+requires-python = ">=3.10"
+license = {text = "MIT"}
+authors = [
+    {name = "ComfyUI Batch Image Processing Contributors"}
+]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+]
+
+# No runtime dependencies - uses packages provided by ComfyUI
+# (torch, Pillow, numpy are all ComfyUI-provided)
+dependencies = []
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=7.0",
+    "pytest-cov>=4.0",
+]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+python_files = ["test_*.py"]
+python_classes = ["Test*"]
+python_functions = ["test_*"]
+addopts = "-v --tb=short --ignore=__init__.py"
+# Use importlib mode to prevent pytest from treating root as a package
+# This allows tests to run without ComfyUI dependencies (torch, numpy)
+pythonpath = ["."]
+# Exclude root and node directories from collection
+norecursedirs = ["nodes", "utils", ".git", ".venv", "__pycache__"]
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["nodes*", "utils*"]
