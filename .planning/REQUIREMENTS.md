@@ -106,37 +106,37 @@ Which phases cover which requirements. Updated during roadmap creation.
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| LOAD-01 | TBD | Pending |
-| LOAD-02 | TBD | Pending |
-| LOAD-03 | TBD | Pending |
-| LOAD-04 | TBD | Pending |
-| LOAD-05 | TBD | Pending |
-| LOAD-06 | TBD | Pending |
-| ITER-01 | TBD | Pending |
-| ITER-02 | TBD | Pending |
-| ITER-03 | TBD | Pending |
-| ITER-04 | TBD | Pending |
-| ITER-05 | TBD | Pending |
-| SAVE-01 | TBD | Pending |
-| SAVE-02 | TBD | Pending |
-| SAVE-03 | TBD | Pending |
-| SAVE-04 | TBD | Pending |
-| SAVE-05 | TBD | Pending |
-| SAVE-06 | TBD | Pending |
-| SAVE-07 | TBD | Pending |
-| SAVE-08 | TBD | Pending |
-| SAVE-09 | TBD | Pending |
-| PROG-01 | TBD | Pending |
-| PROG-02 | TBD | Pending |
-| PROG-03 | TBD | Pending |
-| PROG-04 | TBD | Pending |
-| PROG-05 | TBD | Pending |
+| LOAD-01 | Phase 1 | Pending |
+| LOAD-02 | Phase 1 | Pending |
+| LOAD-03 | Phase 1 | Pending |
+| LOAD-04 | Phase 1 | Pending |
+| LOAD-05 | Phase 1 | Pending |
+| LOAD-06 | Phase 1 | Pending |
+| ITER-01 | Phase 3 | Pending |
+| ITER-02 | Phase 3 | Pending |
+| ITER-03 | Phase 3 | Pending |
+| ITER-04 | Phase 3 | Pending |
+| ITER-05 | Phase 3 | Pending |
+| SAVE-01 | Phase 2 | Pending |
+| SAVE-02 | Phase 2 | Pending |
+| SAVE-03 | Phase 2 | Pending |
+| SAVE-04 | Phase 2 | Pending |
+| SAVE-05 | Phase 2 | Pending |
+| SAVE-06 | Phase 2 | Pending |
+| SAVE-07 | Phase 2 | Pending |
+| SAVE-08 | Phase 2 | Pending |
+| SAVE-09 | Phase 2 | Pending |
+| PROG-01 | Phase 4 | Pending |
+| PROG-02 | Phase 4 | Pending |
+| PROG-03 | Phase 4 | Pending |
+| PROG-04 | Phase 4 | Pending |
+| PROG-05 | Phase 4 | Pending |
 
 **Coverage:**
 - v1 requirements: 25 total
-- Mapped to phases: 0
-- Unmapped: 25 (pending roadmap creation)
+- Mapped to phases: 25
+- Unmapped: 0
 
 ---
 *Requirements defined: 2025-02-01*
-*Last updated: 2025-02-01 after initial definition*
+*Last updated: 2025-02-01 after roadmap creation*
