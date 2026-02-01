@@ -9,12 +9,12 @@ Requirements for initial release. Each maps to roadmap phases.
 
 ### Image Loading
 
-- [ ] **LOAD-01**: Node accepts directory path input (relative to ComfyUI input folder)
-- [ ] **LOAD-02**: Node loads images from specified directory
-- [ ] **LOAD-03**: Node supports glob pattern filtering (e.g., `*.png`, `img_*.jpg`)
-- [ ] **LOAD-04**: Images are sorted in natural order (img2 before img10)
-- [ ] **LOAD-05**: Node outputs total image count for the directory
-- [ ] **LOAD-06**: Node outputs current image filename
+- [x] **LOAD-01**: Node accepts directory path input (relative to ComfyUI input folder) ✓
+- [x] **LOAD-02**: Node loads images from specified directory ✓
+- [x] **LOAD-03**: Node supports glob pattern filtering (e.g., `*.png`, `img_*.jpg`) ✓
+- [x] **LOAD-04**: Images are sorted in natural order (img2 before img10) ✓
+- [x] **LOAD-05**: Node outputs total image count for the directory ✓
+- [x] **LOAD-06**: Node outputs current image filename ✓
 
 ### Batch Iteration
 
@@ -106,12 +106,12 @@ Which phases cover which requirements. Updated during roadmap creation.
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| LOAD-01 | Phase 1 | Pending |
-| LOAD-02 | Phase 1 | Pending |
-| LOAD-03 | Phase 1 | Pending |
-| LOAD-04 | Phase 1 | Pending |
-| LOAD-05 | Phase 1 | Pending |
-| LOAD-06 | Phase 1 | Pending |
+| LOAD-01 | Phase 1 | Complete |
+| LOAD-02 | Phase 1 | Complete |
+| LOAD-03 | Phase 1 | Complete |
+| LOAD-04 | Phase 1 | Complete |
+| LOAD-05 | Phase 1 | Complete |
+| LOAD-06 | Phase 1 | Complete |
 | ITER-01 | Phase 3 | Pending |
 | ITER-02 | Phase 3 | Pending |
 | ITER-03 | Phase 3 | Pending |
@@ -139,4 +139,4 @@ Which phases cover which requirements. Updated during roadmap creation.
 
 ---
 *Requirements defined: 2025-02-01*
-*Last updated: 2025-02-01 after roadmap creation*
+*Last updated: 2026-02-01 - Phase 1 requirements complete*
