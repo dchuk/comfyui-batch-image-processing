@@ -4,6 +4,7 @@ import os
 import tempfile
 
 import pytest
+from PIL import Image
 
 
 @pytest.fixture
@@ -34,6 +35,46 @@ def temp_image_dir():
             filepath = os.path.join(tmpdir, filename)
             with open(filepath, "w") as f:
                 f.write("placeholder")
+
+        yield tmpdir
+
+
+@pytest.fixture
+def temp_real_image_dir():
+    """
+    Create a temporary directory with actual image files.
+
+    Creates real PNG images (100x100 solid colors) for testing
+    image loading functionality. Named to test natural sort order.
+    """
+    with tempfile.TemporaryDirectory() as tmpdir:
+        # Create real images with names that test natural sort
+        images = [
+            ("img1.png", "red"),
+            ("img2.png", "green"),
+            ("img10.png", "blue"),
+        ]
+        for filename, color in images:
+            filepath = os.path.join(tmpdir, filename)
+            img = Image.new("RGB", (100, 100), color=color)
+            img.save(filepath)
+
+        yield tmpdir
+
+
+@pytest.fixture
+def temp_mixed_image_dir():
+    """
+    Create a temp directory with mixed image types and a non-image file.
+    """
+    with tempfile.TemporaryDirectory() as tmpdir:
+        # Real images
+        Image.new("RGB", (50, 50), color="red").save(os.path.join(tmpdir, "test1.png"))
+        Image.new("RGB", (50, 50), color="blue").save(os.path.join(tmpdir, "test2.jpg"))
+
+        # Non-image file
+        with open(os.path.join(tmpdir, "readme.txt"), "w") as f:
+            f.write("not an image")
 
         yield tmpdir
 
