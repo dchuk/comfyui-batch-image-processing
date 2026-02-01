@@ -57,12 +57,12 @@ Plans:
   1. Clicking "Queue" once triggers processing of all images in the directory (one workflow execution per image via Auto Queue)
   2. User can interrupt processing at any time via ComfyUI's cancel/interrupt
   3. Each image processes in order through the full pipeline before the next begins
-  4. Nodes correctly output current index (1-based) and total count for each iteration
-**Plans**: TBD
+  4. Nodes correctly output current index (0-based) and total count for each iteration
+**Plans:** 2 plans
 
 Plans:
-- [ ] 03-01: TBD (state tracking and queue-per-image mechanism)
-- [ ] 03-02: TBD (iteration control and interruption handling)
+- [ ] 03-01-PLAN.md - Iteration state management and queue control utilities
+- [ ] 03-02-PLAN.md - Extend BatchImageLoader with iteration support
 
 ### Phase 4: Progress & Monitoring
 **Goal**: Users have visibility into batch progress with file mappings and image previews
@@ -87,7 +87,7 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4
 |-------|----------------|--------|-----------|
 | 1. Foundation | 2/2 | ✓ Complete | 2026-02-01 |
 | 2. Image Saving | 2/2 | ✓ Complete | 2026-02-01 |
-| 3. Batch Iteration | 0/2 | Ready | - |
+| 3. Batch Iteration | 0/2 | In Progress | - |
 | 4. Progress & Monitoring | 0/2 | Not started | - |
 
 ---
