@@ -43,11 +43,11 @@ Plans:
   2. Output filenames preserve the original source filename with optional prefix/suffix
   3. User can save as PNG, JPG (with quality), or WebP (with quality)
   4. When no output directory specified, images save to a folder named after the input directory
-**Plans**: TBD
+**Plans:** 2 plans
 
 Plans:
-- [ ] 02-01: TBD (saver node with basic output)
-- [ ] 02-02: TBD (format options and filename customization)
+- [ ] 02-01-PLAN.md - Save image utilities and BatchImageSaver node implementation
+- [ ] 02-02-PLAN.md - Node registration and integration verification
 
 ### Phase 3: Batch Iteration
 **Goal**: Users can process an entire directory by running the workflow once, with each image flowing through separately
@@ -86,7 +86,7 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
 | 1. Foundation | 2/2 | ✓ Complete | 2026-02-01 |
-| 2. Image Saving | 0/2 | Not started | - |
+| 2. Image Saving | 0/2 | Ready to execute | - |
 | 3. Batch Iteration | 0/2 | Not started | - |
 | 4. Progress & Monitoring | 0/2 | Not started | - |
 
