@@ -26,15 +26,15 @@ Requirements for initial release. Each maps to roadmap phases.
 
 ### Image Saving
 
-- [ ] **SAVE-01**: Node accepts configurable output directory path
-- [ ] **SAVE-02**: Output directory defaults to input folder name
-- [ ] **SAVE-03**: Node preserves original source image filename
-- [ ] **SAVE-04**: Node supports optional filename prefix
-- [ ] **SAVE-05**: Node supports optional filename suffix (e.g., `_upscaled`)
-- [ ] **SAVE-06**: Node supports PNG output format
-- [ ] **SAVE-07**: Node supports JPG output format with quality setting
-- [ ] **SAVE-08**: Node supports WebP output format with quality setting
-- [ ] **SAVE-09**: Each image is saved immediately after processing (not batched)
+- [x] **SAVE-01**: Node accepts configurable output directory path ✓
+- [x] **SAVE-02**: Output directory defaults to input folder name ✓
+- [x] **SAVE-03**: Node preserves original source image filename ✓
+- [x] **SAVE-04**: Node supports optional filename prefix ✓
+- [x] **SAVE-05**: Node supports optional filename suffix (e.g., `_upscaled`) ✓
+- [x] **SAVE-06**: Node supports PNG output format ✓
+- [x] **SAVE-07**: Node supports JPG output format with quality setting ✓
+- [x] **SAVE-08**: Node supports WebP output format with quality setting ✓
+- [x] **SAVE-09**: Each image is saved immediately after processing (not batched) ✓
 
 ### Progress & Monitoring
 
@@ -117,15 +117,15 @@ Which phases cover which requirements. Updated during roadmap creation.
 | ITER-03 | Phase 3 | Pending |
 | ITER-04 | Phase 3 | Pending |
 | ITER-05 | Phase 3 | Pending |
-| SAVE-01 | Phase 2 | Pending |
-| SAVE-02 | Phase 2 | Pending |
-| SAVE-03 | Phase 2 | Pending |
-| SAVE-04 | Phase 2 | Pending |
-| SAVE-05 | Phase 2 | Pending |
-| SAVE-06 | Phase 2 | Pending |
-| SAVE-07 | Phase 2 | Pending |
-| SAVE-08 | Phase 2 | Pending |
-| SAVE-09 | Phase 2 | Pending |
+| SAVE-01 | Phase 2 | Complete |
+| SAVE-02 | Phase 2 | Complete |
+| SAVE-03 | Phase 2 | Complete |
+| SAVE-04 | Phase 2 | Complete |
+| SAVE-05 | Phase 2 | Complete |
+| SAVE-06 | Phase 2 | Complete |
+| SAVE-07 | Phase 2 | Complete |
+| SAVE-08 | Phase 2 | Complete |
+| SAVE-09 | Phase 2 | Complete |
 | PROG-01 | Phase 4 | Pending |
 | PROG-02 | Phase 4 | Pending |
 | PROG-03 | Phase 4 | Pending |
@@ -139,4 +139,4 @@ Which phases cover which requirements. Updated during roadmap creation.
 
 ---
 *Requirements defined: 2025-02-01*
-*Last updated: 2026-02-01 - Phase 1 requirements complete*
+*Last updated: 2026-02-01 - Phase 2 requirements complete*

@@ -13,7 +13,7 @@ This roadmap delivers a set of ComfyUI custom nodes that enable batch processing
 Decimal phases appear between their surrounding integers in numeric order.
 
 - [x] **Phase 1: Foundation** - Node infrastructure, basic image loading ✓
-- [ ] **Phase 2: Image Saving** - Batch saver with format options and filename customization
+- [x] **Phase 2: Image Saving** - Batch saver with format options and filename customization ✓
 - [ ] **Phase 3: Batch Iteration** - Queue-per-image execution pattern
 - [ ] **Phase 4: Progress & Monitoring** - Progress display and image previews
 
@@ -46,8 +46,8 @@ Plans:
 **Plans:** 2 plans
 
 Plans:
-- [ ] 02-01-PLAN.md - Save image utilities and BatchImageSaver node implementation
-- [ ] 02-02-PLAN.md - Node registration and integration verification
+- [x] 02-01-PLAN.md - Save image utilities and BatchImageSaver node implementation ✓
+- [x] 02-02-PLAN.md - Node registration and integration verification ✓
 
 ### Phase 3: Batch Iteration
 **Goal**: Users can process an entire directory by running the workflow once, with each image flowing through separately
@@ -86,8 +86,8 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
 | 1. Foundation | 2/2 | ✓ Complete | 2026-02-01 |
-| 2. Image Saving | 0/2 | Ready to execute | - |
-| 3. Batch Iteration | 0/2 | Not started | - |
+| 2. Image Saving | 2/2 | ✓ Complete | 2026-02-01 |
+| 3. Batch Iteration | 0/2 | Ready | - |
 | 4. Progress & Monitoring | 0/2 | Not started | - |
 
 ---
