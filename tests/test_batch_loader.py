@@ -27,14 +27,17 @@ def clear_iteration_state():
 class TestInputTypes:
     """Tests for INPUT_TYPES class method."""
 
-    def test_returns_dict_with_required_and_optional(self):
-        """INPUT_TYPES returns dict with required and optional keys."""
+    def test_returns_dict_with_required_optional_and_hidden(self):
+        """INPUT_TYPES returns dict with required, optional, and hidden keys."""
         result = BatchImageLoader.INPUT_TYPES()
         assert isinstance(result, dict)
         assert "required" in result
         assert "optional" in result
-        # hidden key was removed in favor of internal state management
-        assert "hidden" not in result
+        # hidden inputs for native queue control (prompt, extra_pnginfo, unique_id)
+        assert "hidden" in result
+        assert "prompt" in result["hidden"]
+        assert "extra_pnginfo" in result["hidden"]
+        assert "unique_id" in result["hidden"]
 
     def test_directory_is_required_string(self):
         """Directory input is a required STRING type."""

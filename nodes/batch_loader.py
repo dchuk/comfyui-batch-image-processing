@@ -70,6 +70,11 @@ class BatchImageLoader:
                     },
                 ),
             },
+            "hidden": {
+                "prompt": "PROMPT",  # Complete workflow for re-queueing
+                "extra_pnginfo": "EXTRA_PNGINFO",  # PNG metadata (for future use)
+                "unique_id": "UNIQUE_ID",  # This node's ID (for future use)
+            },
         }
 
     RETURN_TYPES = ("IMAGE", "INT", "INT", "STRING", "STRING", "STRING", "BOOLEAN")
@@ -136,6 +141,10 @@ class BatchImageLoader:
         error_handling: str = "Stop on error",
         custom_pattern: str = "*.png,*.jpg,*.jpeg,*.webp",
         start_index: int = 0,
+        # Hidden inputs (populated automatically by ComfyUI at runtime)
+        prompt: dict = None,
+        extra_pnginfo: dict = None,
+        unique_id: str = None,
     ):
         """
         Load the current image from the directory.
@@ -147,6 +156,9 @@ class BatchImageLoader:
             error_handling: "Stop on error" or "Skip on error"
             custom_pattern: Custom glob pattern(s) when filter_preset is "Custom"
             start_index: Starting index for batch processing (0-based)
+            prompt: Complete workflow dict (hidden input for re-queueing)
+            extra_pnginfo: PNG metadata (hidden input for future use)
+            unique_id: This node's ID (hidden input for future use)
 
         Returns:
             Tuple of (image_tensor, total_count, index, filename, basename, status, batch_complete)
@@ -213,6 +225,7 @@ class BatchImageLoader:
             total_count=total_count,
             error_handling=error_handling,
             skip_count=0,
+            prompt=prompt,
         )
 
     def _load_with_error_handling(
@@ -223,6 +236,7 @@ class BatchImageLoader:
         total_count: int,
         error_handling: str,
         skip_count: int,
+        prompt: dict = None,
     ):
         """
         Load image at current index with error handling.
@@ -234,6 +248,7 @@ class BatchImageLoader:
             total_count: Total number of files
             error_handling: "Stop on error" or "Skip on error"
             skip_count: Number of files skipped so far (for infinite loop protection)
+            prompt: Complete workflow dict for re-queueing
 
         Returns:
             Tuple of (image_tensor, total_count, index, filename, basename, status, batch_complete)
@@ -261,6 +276,7 @@ class BatchImageLoader:
                     total_count=total_count,
                     error_handling=error_handling,
                     skip_count=skip_count + 1,
+                    prompt=prompt,
                 )
 
         # Success - extract basename (filename without extension)
@@ -278,8 +294,8 @@ class BatchImageLoader:
             IterationState.set_status(directory, "completed")
             # Don't advance - we've already wrapped to 0 for next run
         else:
-            # Trigger next queue item
-            trigger_next_queue()
+            # Trigger next queue item with the current workflow
+            trigger_next_queue(prompt)
             status = "processing"
             # Advance index AFTER successful load
             # This means interrupt during load leaves index unchanged (Continue mode resumes here)
