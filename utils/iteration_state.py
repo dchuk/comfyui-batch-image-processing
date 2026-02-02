@@ -24,6 +24,7 @@ class IterationState:
     """
 
     _instances: dict = {}  # Class-level state storage
+    _last_directory: str | None = None  # Track last processed directory globally
 
     @classmethod
     def _normalize_path(cls, directory: str) -> str:
@@ -155,6 +156,25 @@ class IterationState:
         state["status"] = status
 
     @classmethod
+    def get_last_directory(cls) -> str | None:
+        """Get the last processed directory.
+
+        Returns:
+            Normalized path of last processed directory, or None if none yet.
+        """
+        return cls._last_directory
+
+    @classmethod
+    def set_last_directory(cls, directory: str) -> None:
+        """Set the last processed directory.
+
+        Args:
+            directory: Directory path being processed
+        """
+        cls._last_directory = cls._normalize_path(directory)
+
+    @classmethod
     def clear_all(cls) -> None:
         """Clear all state (useful for testing)."""
         cls._instances.clear()
+        cls._last_directory = None

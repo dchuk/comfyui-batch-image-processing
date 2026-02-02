@@ -168,15 +168,17 @@ class BatchImageLoader:
         # Get or initialize state for this directory
         state = IterationState.get_state(directory)
 
-        # Check for directory change - if last_directory exists and differs, reset
-        # Note: first run won't have last_directory, so we skip this check
-        if "last_directory" in state:
-            if IterationState.check_directory_change(directory, state["last_directory"]):
+        # Check for directory change - if last_directory differs from current, reset
+        # This detects when user switches to a different folder
+        last_dir = IterationState.get_last_directory()
+        if last_dir is not None:
+            if IterationState.check_directory_change(directory, last_dir):
+                # Switching to a different directory, reset its state
                 IterationState.reset(directory)
                 state = IterationState.get_state(directory)
 
         # Track current directory for next execution's change detection
-        state["last_directory"] = os.path.normpath(os.path.abspath(directory))
+        IterationState.set_last_directory(directory)
 
         # Handle iteration_mode
         if iteration_mode == "Reset":
@@ -274,14 +276,14 @@ class BatchImageLoader:
             IterationState.wrap_index(directory)
             status = "completed"
             IterationState.set_status(directory, "completed")
+            # Don't advance - we've already wrapped to 0 for next run
         else:
             # Trigger next queue item
             trigger_next_queue()
             status = "processing"
-
-        # Advance index AFTER successful load
-        # This means interrupt during load leaves index unchanged (Continue mode resumes here)
-        IterationState.advance(directory)
+            # Advance index AFTER successful load
+            # This means interrupt during load leaves index unchanged (Continue mode resumes here)
+            IterationState.advance(directory)
 
         # Return 0-based index
         return (image_tensor, total_count, current_index, filename, basename, status, batch_complete)
