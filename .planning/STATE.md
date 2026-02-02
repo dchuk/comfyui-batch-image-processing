@@ -5,23 +5,23 @@
 See: .planning/PROJECT.md (updated 2025-02-01)
 
 **Core value:** Run a pipeline once and have it automatically process every image in a directory, saving each result as it completes with full progress visibility.
-**Current focus:** Phase 3 - Batch Iteration
+**Current focus:** Phase 3 - Batch Iteration (Complete)
 
 ## Current Position
 
 Phase: 3 of 4 (Batch Iteration)
-Plan: 1 of 2 in current phase
-Status: In progress
-Last activity: 2026-02-02 - Completed 03-01-PLAN.md (iteration utilities)
+Plan: 2 of 2 in current phase
+Status: Phase complete
+Last activity: 2026-02-02 - Completed 03-02-PLAN.md (iteration support)
 
-Progress: [██████░░░░] 62.5% (5/8 plans)
+Progress: [███████░░░] 75% (6/8 plans)
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 5
+- Total plans completed: 6
 - Average duration: ~6 minutes
-- Total execution time: 0.55 hours
+- Total execution time: 0.63 hours
 
 **By Phase:**
 
@@ -29,11 +29,11 @@ Progress: [██████░░░░] 62.5% (5/8 plans)
 |-------|-------|-------|----------|
 | 1-Foundation | 2/2 | 20m | 10m |
 | 2-Image-Saving | 2/2 | 9m | 4.5m |
-| 3-Batch-Iteration | 1/2 | 4m | 4m |
+| 3-Batch-Iteration | 2/2 | 11m | 5.5m |
 
 **Recent Trend:**
-- Last 5 plans: 01-02 (5m), 02-01 (8m), 02-02 (1m), 03-01 (4m)
-- Trend: Continuing to improve
+- Last 5 plans: 02-01 (8m), 02-02 (1m), 03-01 (4m), 03-02 (7m)
+- Trend: Consistent execution
 
 *Updated after each plan completion*
 
@@ -56,6 +56,9 @@ Recent decisions affecting current work:
 - [03-01]: Path normalization uses os.path.normpath(os.path.abspath()) for consistent state keying
 - [03-01]: stop_auto_queue uses impact-stop-auto-queue event for Impact Pack compatibility
 - [03-01]: Class-level _instances dict keyed by normalized directory path for state persistence
+- [03-02]: Global _last_directory for cross-execution directory change detection
+- [03-02]: Advance index only on non-complete batches (wrap_index handles completion reset)
+- [03-02]: Recursive _load_with_error_handling with skip_count for infinite loop protection
 
 ### Pending Todos
 
@@ -63,12 +66,12 @@ None.
 
 ### Blockers/Concerns
 
-None - 03-01 complete, ready for 03-02.
+None - Phase 3 complete, ready for Phase 4 (Progress Display).
 
 ## Session Continuity
 
 Last session: 2026-02-02
-Stopped at: Completed 03-01-PLAN.md (iteration utilities)
+Stopped at: Completed 03-02-PLAN.md (iteration support)
 Resume file: None
 
 ---
