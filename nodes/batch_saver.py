@@ -28,7 +28,8 @@ class BatchImageSaver:
     """
 
     CATEGORY = "batch_processing"
-    RETURN_TYPES = ()
+    RETURN_TYPES = ("IMAGE", "STRING", "STRING")
+    RETURN_NAMES = ("OUTPUT_IMAGE", "SAVED_FILENAME", "SAVED_PATH")
     FUNCTION = "save_image"
     OUTPUT_NODE = True
 
@@ -175,7 +176,7 @@ class BatchImageSaver:
         if not should_save:
             # Skip mode - file exists and user chose to skip
             print(f"[BatchImageSaver] SKIPPING save (file exists, skip mode)")
-            return {"ui": {"images": []}}
+            return {"ui": {"images": []}, "result": (image, "", "")}
 
         # 5. Convert and save
         print(f"[BatchImageSaver] Converting tensor to PIL image...")
@@ -207,16 +208,20 @@ class BatchImageSaver:
         else:
             subfolder = ""
 
+        saved_filename = os.path.basename(final_path)
+        saved_path = final_path
+
         result = {
             "ui": {
                 "images": [
                     {
-                        "filename": os.path.basename(final_path),
+                        "filename": saved_filename,
                         "subfolder": subfolder,
                         "type": "output",
                     }
                 ]
-            }
+            },
+            "result": (image, saved_filename, saved_path)
         }
         print(f"[BatchImageSaver] Returning UI result: {result}")
         print(f"[BatchImageSaver] ===== save_image complete =====\n")
