@@ -38,11 +38,13 @@ Requirements for initial release. Each maps to roadmap phases.
 
 ### Progress & Monitoring
 
-- [ ] **PROG-01**: Node displays progress bar showing X of Y images processed
-- [ ] **PROG-02**: Node displays file list with original filename → saved filename mappings
-- [ ] **PROG-03**: File list updates as each image completes
-- [ ] **PROG-04**: Node shows basic thumbnail preview of before (input) image
-- [ ] **PROG-05**: Node shows basic thumbnail preview of after (output) image
+*Refined during /gsd:discuss-phase - user chose wiring-based approach over custom UI components*
+
+- [x] **PROG-01**: Helper node formats progress as "X of Y (Z%)" text for wiring to any text display ✓
+- [x] **PROG-02**: BatchImageSaver outputs saved filename for per-image mapping visibility ✓
+- [x] **PROG-03**: BatchImageSaver outputs saved path for full path access ✓
+- [x] **PROG-04**: BatchImageSaver passes through input image for wiring to preview nodes ✓
+- [x] **PROG-05**: User can wire OUTPUT_IMAGE to ComfyUI's PreviewImage for before/after previews ✓
 
 ## Quality Standards
 
@@ -126,11 +128,11 @@ Which phases cover which requirements. Updated during roadmap creation.
 | SAVE-07 | Phase 2 | Complete |
 | SAVE-08 | Phase 2 | Complete |
 | SAVE-09 | Phase 2 | Complete |
-| PROG-01 | Phase 4 | Pending |
-| PROG-02 | Phase 4 | Pending |
-| PROG-03 | Phase 4 | Pending |
-| PROG-04 | Phase 4 | Pending |
-| PROG-05 | Phase 4 | Pending |
+| PROG-01 | Phase 4 | Complete |
+| PROG-02 | Phase 4 | Complete |
+| PROG-03 | Phase 4 | Complete |
+| PROG-04 | Phase 4 | Complete |
+| PROG-05 | Phase 4 | Complete |
 
 **Coverage:**
 - v1 requirements: 25 total
@@ -139,4 +141,4 @@ Which phases cover which requirements. Updated during roadmap creation.
 
 ---
 *Requirements defined: 2025-02-01*
-*Last updated: 2026-02-01 - Phase 3 requirements complete*
+*Last updated: 2026-02-02 - All v1 requirements complete*

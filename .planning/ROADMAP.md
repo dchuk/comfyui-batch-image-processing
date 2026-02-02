@@ -16,7 +16,7 @@ Decimal phases appear between their surrounding integers in numeric order.
 - [x] **Phase 2: Image Saving** - Batch saver with format options and filename customization
 - [x] **Phase 3: Batch Iteration** - Queue-per-image execution pattern
 - [x] **Phase 3.1: Native Queue Control** - Remove Impact Pack dependency (INSERTED)
-- [ ] **Phase 4: Progress & Monitoring** - Progress display and image previews
+- [x] **Phase 4: Progress & Monitoring** - Progress display and image previews
 
 ## Phase Details
 
@@ -90,8 +90,8 @@ Plans:
 **Plans:** 2 plans
 
 Plans:
-- [ ] 04-01-PLAN.md - Extend BatchImageSaver with passthrough outputs, create BatchProgressFormatter node
-- [ ] 04-02-PLAN.md - Node registration and comprehensive tests
+- [x] 04-01-PLAN.md - Extend BatchImageSaver with passthrough outputs, create BatchProgressFormatter node
+- [x] 04-02-PLAN.md - Node registration and comprehensive tests
 
 ## Progress
 
@@ -104,8 +104,8 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 3.1 -> 4
 | 2. Image Saving | 2/2 | Complete | 2026-02-01 |
 | 3. Batch Iteration | 2/2 | Complete | 2026-02-01 |
 | 3.1 Native Queue Control | 1/1 | Complete | 2026-02-02 |
-| 4. Progress & Monitoring | 0/2 | Planned | - |
+| 4. Progress & Monitoring | 2/2 | Complete | 2026-02-02 |
 
 ---
 *Roadmap created: 2025-02-01*
-*Last updated: 2026-02-02 - Phase 4 planned*
+*Last updated: 2026-02-02 - Phase 4 complete, milestone v1.0 complete*
