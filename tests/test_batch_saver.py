@@ -75,9 +75,9 @@ class TestClassAttributes:
         """CATEGORY is batch_processing."""
         assert BatchImageSaver.CATEGORY == "batch_processing"
 
-    def test_return_types_empty(self):
-        """RETURN_TYPES is empty tuple (output node)."""
-        assert BatchImageSaver.RETURN_TYPES == ()
+    def test_return_types_has_outputs(self):
+        """RETURN_TYPES has IMAGE and STRING outputs for downstream wiring."""
+        assert BatchImageSaver.RETURN_TYPES == ("IMAGE", "STRING", "STRING")
 
     def test_function_name(self):
         """FUNCTION is save_image."""
@@ -86,6 +86,105 @@ class TestClassAttributes:
     def test_output_node_is_true(self):
         """OUTPUT_NODE is True."""
         assert BatchImageSaver.OUTPUT_NODE is True
+
+
+class TestReturnNames:
+    """Tests for RETURN_NAMES attribute."""
+
+    def test_return_names_defined(self):
+        """RETURN_NAMES has correct output names."""
+        assert BatchImageSaver.RETURN_NAMES == ("OUTPUT_IMAGE", "SAVED_FILENAME", "SAVED_PATH")
+
+
+class TestSaveImageReturns:
+    """Tests for save_image return values."""
+
+    def test_returns_result_tuple(self, temp_output_dir):
+        """save_image returns result tuple with image, filename, path."""
+        tensor = torch.ones(1, 50, 50, 3, dtype=torch.float32)
+
+        saver = BatchImageSaver()
+        result = saver.save_image(
+            image=tensor,
+            output_file_type="png",
+            quality=100,
+            overwrite_mode="Overwrite",
+            output_directory=temp_output_dir,
+            output_base_name="test_returns",
+        )
+
+        # Check result structure - must have both "ui" and "result" keys
+        assert "ui" in result
+        assert "result" in result
+        assert len(result["result"]) == 3
+
+        # Check result values
+        output_image, saved_filename, saved_path = result["result"]
+
+        # Image should be the SAME tensor reference (passthrough, not a copy)
+        assert output_image is tensor
+
+        # Filename should be just the filename (no path)
+        assert saved_filename == "test_returns.png"
+
+        # Path should be full absolute path
+        assert saved_path == os.path.join(temp_output_dir, "test_returns.png")
+
+    def test_skip_mode_returns_empty_strings(self, temp_output_dir):
+        """Skip mode returns empty strings for filename/path but still passes image."""
+        # Create existing file to trigger skip
+        filepath = os.path.join(temp_output_dir, "existing.png")
+        Image.new("RGB", (50, 50), color="red").save(filepath)
+
+        tensor = torch.ones(1, 50, 50, 3, dtype=torch.float32)
+
+        saver = BatchImageSaver()
+        result = saver.save_image(
+            image=tensor,
+            output_file_type="png",
+            quality=100,
+            overwrite_mode="Skip",
+            output_directory=temp_output_dir,
+            output_base_name="existing",
+        )
+
+        # Check result structure
+        assert "result" in result
+        output_image, saved_filename, saved_path = result["result"]
+
+        # Image STILL passes through even when skipped (for downstream preview)
+        assert output_image is tensor
+
+        # Filename and path are empty strings (not None) when skipped
+        assert saved_filename == ""
+        assert saved_path == ""
+
+    def test_rename_mode_returns_renamed_path(self, temp_output_dir):
+        """Rename mode returns the actual renamed filename and path."""
+        # Create existing file to trigger rename
+        filepath = os.path.join(temp_output_dir, "photo.png")
+        Image.new("RGB", (50, 50), color="red").save(filepath)
+
+        tensor = torch.ones(1, 50, 50, 3, dtype=torch.float32)
+
+        saver = BatchImageSaver()
+        result = saver.save_image(
+            image=tensor,
+            output_file_type="png",
+            quality=100,
+            overwrite_mode="Rename",
+            output_directory=temp_output_dir,
+            output_base_name="photo",
+        )
+
+        output_image, saved_filename, saved_path = result["result"]
+
+        # Image passes through
+        assert output_image is tensor
+
+        # Should return the RENAMED filename (photo_1.png)
+        assert saved_filename == "photo_1.png"
+        assert saved_path == os.path.join(temp_output_dir, "photo_1.png")
 
 
 class TestSaveImagePng:
