@@ -17,6 +17,14 @@ try:
 except ImportError:
     folder_paths = None  # For testing outside ComfyUI
 
+# Graceful import for PromptServer (ComfyUI module for live UI updates)
+try:
+    from server import PromptServer
+    HAS_SERVER = True
+except ImportError:
+    PromptServer = None
+    HAS_SERVER = False
+
 
 class BatchImageSaver:
     """
@@ -96,6 +104,9 @@ class BatchImageSaver:
                     },
                 ),
             },
+            "hidden": {
+                "unique_id": "UNIQUE_ID",
+            },
         }
 
     def save_image(
@@ -108,6 +119,7 @@ class BatchImageSaver:
         output_file_type="png",
         filename_prefix="",
         filename_suffix="",
+        unique_id=None,
     ):
         """
         Save the processed image with configured options.
@@ -223,6 +235,19 @@ class BatchImageSaver:
             },
             "result": (image, saved_filename, saved_path)
         }
+
+        # Broadcast UI update to ALL connected clients (fixes batch iteration UI updates)
+        if HAS_SERVER and PromptServer is not None and PromptServer.instance is not None and unique_id is not None:
+            PromptServer.instance.send_sync(
+                "executed",
+                {
+                    "node": unique_id,
+                    "output": result["ui"],
+                },
+                sid=None  # Broadcast to ALL clients
+            )
+            print(f"[BatchImageSaver] Broadcast 'executed' event to all clients for node {unique_id}")
+
         print(f"[BatchImageSaver] Returning UI result: {result}")
         print(f"[BatchImageSaver] ===== save_image complete =====\n")
 

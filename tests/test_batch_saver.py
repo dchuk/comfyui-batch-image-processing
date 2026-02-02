@@ -592,3 +592,97 @@ class TestFallbackFilename:
         assert filename.endswith(".png")
         # Check file exists
         assert os.path.exists(os.path.join(temp_output_dir, filename))
+
+
+class TestBroadcastBehavior:
+    """Tests for live UI update broadcast behavior."""
+
+    def test_hidden_inputs_declared(self):
+        """INPUT_TYPES includes hidden section with unique_id."""
+        result = BatchImageSaver.INPUT_TYPES()
+        assert "hidden" in result
+        assert "unique_id" in result["hidden"]
+        assert result["hidden"]["unique_id"] == "UNIQUE_ID"
+
+    def test_broadcasts_executed_event_when_server_available(self, temp_output_dir):
+        """Broadcasts 'executed' event with correct args when server is available."""
+        import comfyui_batch_image_processing.nodes.batch_saver as batch_saver_module
+
+        tensor = torch.ones(1, 50, 50, 3, dtype=torch.float32)
+
+        # Create mock PromptServer
+        mock_server_instance = mock.MagicMock()
+        mock_prompt_server = mock.MagicMock()
+        mock_prompt_server.instance = mock_server_instance
+
+        with mock.patch.object(batch_saver_module, "HAS_SERVER", True):
+            with mock.patch.object(batch_saver_module, "PromptServer", mock_prompt_server):
+                saver = BatchImageSaver()
+                result = saver.save_image(
+                    image=tensor,
+                    output_file_type="png",
+                    quality=100,
+                    overwrite_mode="Overwrite",
+                    output_directory=temp_output_dir,
+                    output_base_name="test_broadcast",
+                    unique_id="123",
+                )
+
+        # Verify send_sync was called with correct arguments
+        mock_server_instance.send_sync.assert_called_once()
+        call_args = mock_server_instance.send_sync.call_args
+        assert call_args[0][0] == "executed"  # Event type
+        assert call_args[0][1]["node"] == "123"  # Node ID
+        assert "output" in call_args[0][1]  # Output data
+        assert call_args[1]["sid"] is None  # Broadcast to ALL clients
+
+    def test_no_broadcast_without_unique_id(self, temp_output_dir):
+        """No broadcast when unique_id is None."""
+        import comfyui_batch_image_processing.nodes.batch_saver as batch_saver_module
+
+        tensor = torch.ones(1, 50, 50, 3, dtype=torch.float32)
+
+        mock_server_instance = mock.MagicMock()
+        mock_prompt_server = mock.MagicMock()
+        mock_prompt_server.instance = mock_server_instance
+
+        with mock.patch.object(batch_saver_module, "HAS_SERVER", True):
+            with mock.patch.object(batch_saver_module, "PromptServer", mock_prompt_server):
+                saver = BatchImageSaver()
+                result = saver.save_image(
+                    image=tensor,
+                    output_file_type="png",
+                    quality=100,
+                    overwrite_mode="Overwrite",
+                    output_directory=temp_output_dir,
+                    output_base_name="test_no_broadcast",
+                    unique_id=None,  # No unique_id
+                )
+
+        # send_sync should NOT have been called
+        mock_server_instance.send_sync.assert_not_called()
+
+    def test_no_crash_without_server(self, temp_output_dir):
+        """No crash when HAS_SERVER is False (default test environment)."""
+        import comfyui_batch_image_processing.nodes.batch_saver as batch_saver_module
+
+        tensor = torch.ones(1, 50, 50, 3, dtype=torch.float32)
+
+        # Ensure HAS_SERVER is False (simulating test environment)
+        with mock.patch.object(batch_saver_module, "HAS_SERVER", False):
+            with mock.patch.object(batch_saver_module, "PromptServer", None):
+                saver = BatchImageSaver()
+                # Should not raise an exception
+                result = saver.save_image(
+                    image=tensor,
+                    output_file_type="png",
+                    quality=100,
+                    overwrite_mode="Overwrite",
+                    output_directory=temp_output_dir,
+                    output_base_name="test_no_crash",
+                    unique_id="123",
+                )
+
+        # Should still return valid result
+        assert "ui" in result
+        assert "result" in result
