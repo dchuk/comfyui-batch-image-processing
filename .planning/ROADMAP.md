@@ -14,7 +14,7 @@ Decimal phases appear between their surrounding integers in numeric order.
 
 - [x] **Phase 1: Foundation** - Node infrastructure, basic image loading ✓
 - [x] **Phase 2: Image Saving** - Batch saver with format options and filename customization ✓
-- [ ] **Phase 3: Batch Iteration** - Queue-per-image execution pattern
+- [x] **Phase 3: Batch Iteration** - Queue-per-image execution pattern ✓
 - [ ] **Phase 4: Progress & Monitoring** - Progress display and image previews
 
 ## Phase Details
@@ -61,8 +61,8 @@ Plans:
 **Plans:** 2 plans
 
 Plans:
-- [ ] 03-01-PLAN.md - Iteration state management and queue control utilities
-- [ ] 03-02-PLAN.md - Extend BatchImageLoader with iteration support
+- [x] 03-01-PLAN.md - Iteration state management and queue control utilities ✓
+- [x] 03-02-PLAN.md - Extend BatchImageLoader with iteration support ✓
 
 ### Phase 4: Progress & Monitoring
 **Goal**: Users have visibility into batch progress with file mappings and image previews
@@ -87,9 +87,9 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4
 |-------|----------------|--------|-----------|
 | 1. Foundation | 2/2 | ✓ Complete | 2026-02-01 |
 | 2. Image Saving | 2/2 | ✓ Complete | 2026-02-01 |
-| 3. Batch Iteration | 0/2 | In Progress | - |
+| 3. Batch Iteration | 2/2 | ✓ Complete | 2026-02-01 |
 | 4. Progress & Monitoring | 0/2 | Not started | - |
 
 ---
 *Roadmap created: 2025-02-01*
-*Last updated: 2026-02-01*
+*Last updated: 2026-02-01 - Phase 3 complete*

@@ -18,11 +18,11 @@ Requirements for initial release. Each maps to roadmap phases.
 
 ### Batch Iteration
 
-- [ ] **ITER-01**: Each image triggers a separate workflow execution (queue-per-image pattern)
-- [ ] **ITER-02**: Node outputs current image index (1-based)
-- [ ] **ITER-03**: Node outputs total image count
-- [ ] **ITER-04**: Processing proceeds through all images in order
-- [ ] **ITER-05**: User can interrupt processing via ComfyUI's cancel/interrupt
+- [x] **ITER-01**: Each image triggers a separate workflow execution (queue-per-image pattern) ✓
+- [x] **ITER-02**: Node outputs current image index (0-based per CONTEXT.md decision) ✓
+- [x] **ITER-03**: Node outputs total image count ✓
+- [x] **ITER-04**: Processing proceeds through all images in order ✓
+- [x] **ITER-05**: User can interrupt processing via ComfyUI's cancel/interrupt ✓
 
 ### Image Saving
 
@@ -112,11 +112,11 @@ Which phases cover which requirements. Updated during roadmap creation.
 | LOAD-04 | Phase 1 | Complete |
 | LOAD-05 | Phase 1 | Complete |
 | LOAD-06 | Phase 1 | Complete |
-| ITER-01 | Phase 3 | Pending |
-| ITER-02 | Phase 3 | Pending |
-| ITER-03 | Phase 3 | Pending |
-| ITER-04 | Phase 3 | Pending |
-| ITER-05 | Phase 3 | Pending |
+| ITER-01 | Phase 3 | Complete |
+| ITER-02 | Phase 3 | Complete |
+| ITER-03 | Phase 3 | Complete |
+| ITER-04 | Phase 3 | Complete |
+| ITER-05 | Phase 3 | Complete |
 | SAVE-01 | Phase 2 | Complete |
 | SAVE-02 | Phase 2 | Complete |
 | SAVE-03 | Phase 2 | Complete |
@@ -139,4 +139,4 @@ Which phases cover which requirements. Updated during roadmap creation.
 
 ---
 *Requirements defined: 2025-02-01*
-*Last updated: 2026-02-01 - Phase 2 requirements complete*
+*Last updated: 2026-02-01 - Phase 3 requirements complete*
