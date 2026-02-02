@@ -77,8 +77,8 @@ class BatchImageLoader:
             },
         }
 
-    RETURN_TYPES = ("IMAGE", "INT", "INT", "STRING", "STRING", "STRING", "BOOLEAN")
-    RETURN_NAMES = ("IMAGE", "TOTAL_COUNT", "INDEX", "FILENAME", "BASENAME", "STATUS", "BATCH_COMPLETE")
+    RETURN_TYPES = ("IMAGE", "INT", "INT", "STRING", "STRING", "STRING", "STRING", "STRING", "BOOLEAN")
+    RETURN_NAMES = ("IMAGE", "TOTAL_COUNT", "INDEX", "FILENAME", "BASENAME", "SOURCE_DIRECTORY", "ORIGINAL_FORMAT", "STATUS", "BATCH_COMPLETE")
     FUNCTION = "load_image"
     OUTPUT_NODE = False
 
@@ -91,6 +91,10 @@ class BatchImageLoader:
         error_handling: str = "Stop on error",
         custom_pattern: str = "*.png,*.jpg,*.jpeg,*.webp",
         start_index: int = 0,
+        # Hidden inputs (ComfyUI passes these to all class methods)
+        prompt: dict = None,
+        extra_pnginfo: dict = None,
+        unique_id: str = None,
     ):
         """
         Validate inputs before execution.
@@ -121,6 +125,10 @@ class BatchImageLoader:
         error_handling: str = "Stop on error",
         custom_pattern: str = "*.png,*.jpg,*.jpeg,*.webp",
         start_index: int = 0,
+        # Hidden inputs (ComfyUI passes these to all class methods)
+        prompt: dict = None,
+        extra_pnginfo: dict = None,
+        unique_id: str = None,
     ):
         """
         Determine if node should re-execute.
@@ -161,7 +169,7 @@ class BatchImageLoader:
             unique_id: This node's ID (hidden input for future use)
 
         Returns:
-            Tuple of (image_tensor, total_count, index, filename, basename, status, batch_complete)
+            Tuple of (image_tensor, total_count, index, filename, basename, source_directory, original_format, status, batch_complete)
         """
         # Normalize directory path for consistent state lookup
         directory = os.path.normpath(directory)
@@ -251,7 +259,7 @@ class BatchImageLoader:
             prompt: Complete workflow dict for re-queueing
 
         Returns:
-            Tuple of (image_tensor, total_count, index, filename, basename, status, batch_complete)
+            Tuple of (image_tensor, total_count, index, filename, basename, source_directory, original_format, status, batch_complete)
         """
         # Infinite loop protection
         if skip_count >= total_count:
@@ -279,8 +287,10 @@ class BatchImageLoader:
                     prompt=prompt,
                 )
 
-        # Success - extract basename (filename without extension)
-        basename = os.path.splitext(filename)[0]
+        # Success - extract basename (filename without extension) and format
+        basename, ext = os.path.splitext(filename)
+        # Get original format without the dot (e.g., "png", "jpg")
+        original_format = ext[1:].lower() if ext else "png"
 
         # Determine if this is the last image
         batch_complete = current_index >= total_count - 1
@@ -302,4 +312,4 @@ class BatchImageLoader:
             IterationState.advance(directory)
 
         # Return 0-based index
-        return (image_tensor, total_count, current_index, filename, basename, status, batch_complete)
+        return (image_tensor, total_count, current_index, filename, basename, directory, original_format, status, batch_complete)

@@ -125,12 +125,12 @@ class TestValidateInputs:
 class TestLoadImage:
     """Tests for load_image method."""
 
-    def test_returns_tuple_of_seven_elements(self, temp_real_image_dir):
-        """load_image returns a tuple with exactly 7 elements."""
+    def test_returns_tuple_of_nine_elements(self, temp_real_image_dir):
+        """load_image returns a tuple with exactly 9 elements."""
         loader = BatchImageLoader()
         result = loader.load_image(temp_real_image_dir, "All Images")
         assert isinstance(result, tuple)
-        assert len(result) == 7
+        assert len(result) == 9
 
     def test_image_is_torch_tensor(self, temp_real_image_dir):
         """IMAGE output is a torch.Tensor."""
@@ -179,11 +179,29 @@ class TestLoadImage:
         assert "." not in basename
         assert basename.startswith("img")
 
+    def test_source_directory_output_exists(self, temp_real_image_dir):
+        """SOURCE_DIRECTORY output is a string matching the input directory."""
+        loader = BatchImageLoader()
+        result = loader.load_image(temp_real_image_dir, "All Images")
+        source_directory = result[5]
+        assert isinstance(source_directory, str)
+        # Should match the normalized input directory
+        import os
+        assert source_directory == os.path.normpath(temp_real_image_dir)
+
+    def test_original_format_output_exists(self, temp_real_image_dir):
+        """ORIGINAL_FORMAT output is a string with the file extension."""
+        loader = BatchImageLoader()
+        result = loader.load_image(temp_real_image_dir, "All Images")
+        original_format = result[6]
+        assert isinstance(original_format, str)
+        assert original_format == "png"  # Test images are PNG
+
     def test_status_output_exists(self, temp_real_image_dir):
         """STATUS output is a string."""
         loader = BatchImageLoader()
         result = loader.load_image(temp_real_image_dir, "All Images")
-        status = result[5]
+        status = result[7]
         assert isinstance(status, str)
         assert status in ["processing", "completed"]
 
@@ -191,7 +209,7 @@ class TestLoadImage:
         """BATCH_COMPLETE output is a boolean."""
         loader = BatchImageLoader()
         result = loader.load_image(temp_real_image_dir, "All Images")
-        batch_complete = result[6]
+        batch_complete = result[8]
         assert isinstance(batch_complete, bool)
 
 
@@ -306,15 +324,15 @@ class TestBatchCompletion:
 
         # First image (index 0) - not complete
         result1 = loader.load_image(temp_real_image_dir, "All Images")
-        assert result1[6] is False  # batch_complete
+        assert result1[8] is False  # batch_complete
 
         # Second image (index 1) - not complete
         result2 = loader.load_image(temp_real_image_dir, "All Images")
-        assert result2[6] is False  # batch_complete
+        assert result2[8] is False  # batch_complete
 
         # Third/last image (index 2) - complete
         result3 = loader.load_image(temp_real_image_dir, "All Images")
-        assert result3[6] is True  # batch_complete
+        assert result3[8] is True  # batch_complete
 
     def test_status_output_processing_vs_completed(self, temp_real_image_dir):
         """STATUS is 'processing' for non-last images, 'completed' for last."""
@@ -322,15 +340,15 @@ class TestBatchCompletion:
 
         # First image - processing
         result1 = loader.load_image(temp_real_image_dir, "All Images")
-        assert result1[5] == "processing"
+        assert result1[7] == "processing"
 
         # Second image - processing
         result2 = loader.load_image(temp_real_image_dir, "All Images")
-        assert result2[5] == "processing"
+        assert result2[7] == "processing"
 
         # Third/last image - completed
         result3 = loader.load_image(temp_real_image_dir, "All Images")
-        assert result3[5] == "completed"
+        assert result3[7] == "completed"
 
 
 class TestStartIndex:
@@ -562,7 +580,7 @@ class TestIndexWraparound:
         loader.load_image(temp_real_image_dir, "All Images")  # 0
         loader.load_image(temp_real_image_dir, "All Images")  # 1
         result = loader.load_image(temp_real_image_dir, "All Images")  # 2 (last)
-        assert result[6] is True  # batch_complete
+        assert result[8] is True  # batch_complete
 
         # Next load should wrap to 0
         result = loader.load_image(temp_real_image_dir, "All Images")
