@@ -4,6 +4,8 @@ import os
 
 from ..utils.file_utils import filter_files_by_patterns, get_pattern_for_preset
 from ..utils.image_utils import load_image_as_tensor
+from ..utils.iteration_state import IterationState
+from ..utils.queue_control import stop_auto_queue, trigger_next_queue
 from ..utils.sorting import natural_sort_key
 
 
@@ -35,6 +37,20 @@ class BatchImageLoader:
                     ["All Images", "PNG Only", "JPG Only", "Custom"],
                     {"default": "All Images"},
                 ),
+                "iteration_mode": (
+                    ["Continue", "Reset"],
+                    {
+                        "default": "Continue",
+                        "tooltip": "Continue = resume from current position, Reset = start fresh",
+                    },
+                ),
+                "error_handling": (
+                    ["Stop on error", "Skip on error"],
+                    {
+                        "default": "Stop on error",
+                        "tooltip": "How to handle images that fail to load",
+                    },
+                ),
             },
             "optional": {
                 "custom_pattern": (
@@ -44,14 +60,20 @@ class BatchImageLoader:
                         "tooltip": "Comma-separated glob patterns (used when filter_preset is Custom)",
                     },
                 ),
-            },
-            "hidden": {
-                "current_index": ("INT", {"default": 0}),
+                "start_index": (
+                    "INT",
+                    {
+                        "default": 0,
+                        "min": 0,
+                        "max": 99999,
+                        "tooltip": "Starting index for batch processing (0-based)",
+                    },
+                ),
             },
         }
 
-    RETURN_TYPES = ("IMAGE", "INT", "INT", "STRING", "STRING")
-    RETURN_NAMES = ("IMAGE", "TOTAL_COUNT", "CURRENT_INDEX", "FILENAME", "BASENAME")
+    RETURN_TYPES = ("IMAGE", "INT", "INT", "STRING", "STRING", "STRING", "BOOLEAN")
+    RETURN_NAMES = ("IMAGE", "TOTAL_COUNT", "INDEX", "FILENAME", "BASENAME", "STATUS", "BATCH_COMPLETE")
     FUNCTION = "load_image"
     OUTPUT_NODE = False
 
@@ -60,8 +82,10 @@ class BatchImageLoader:
         cls,
         directory: str,
         filter_preset: str,
+        iteration_mode: str = "Continue",
+        error_handling: str = "Stop on error",
         custom_pattern: str = "*.png,*.jpg,*.jpeg,*.webp",
-        current_index: int = 0,
+        start_index: int = 0,
     ):
         """
         Validate inputs before execution.
@@ -88,22 +112,30 @@ class BatchImageLoader:
         cls,
         directory: str,
         filter_preset: str,
+        iteration_mode: str = "Continue",
+        error_handling: str = "Stop on error",
         custom_pattern: str = "*.png,*.jpg,*.jpeg,*.webp",
-        current_index: int = 0,
+        start_index: int = 0,
     ):
         """
         Determine if node should re-execute.
 
-        Returns a value that changes when inputs change.
+        Returns a value that changes when inputs or internal state change.
+        Includes current index to force re-execution each iteration.
         """
-        return f"{directory}|{filter_preset}|{custom_pattern}|{current_index}"
+        if not directory:
+            return ""
+        state = IterationState.get_state(directory)
+        return f"{directory}|{filter_preset}|{state.get('index', 0)}|{iteration_mode}"
 
     def load_image(
         self,
         directory: str,
         filter_preset: str,
+        iteration_mode: str = "Continue",
+        error_handling: str = "Stop on error",
         custom_pattern: str = "*.png,*.jpg,*.jpeg,*.webp",
-        current_index: int = 0,
+        start_index: int = 0,
     ):
         """
         Load the current image from the directory.
@@ -111,11 +143,13 @@ class BatchImageLoader:
         Args:
             directory: Path to the image directory
             filter_preset: Preset filter option
+            iteration_mode: "Continue" to resume from current position, "Reset" to start fresh
+            error_handling: "Stop on error" or "Skip on error"
             custom_pattern: Custom glob pattern(s) when filter_preset is "Custom"
-            current_index: 0-based index of current image (for iteration)
+            start_index: Starting index for batch processing (0-based)
 
         Returns:
-            Tuple of (image_tensor, total_count, current_index_1based, filename, basename)
+            Tuple of (image_tensor, total_count, index, filename, basename, status, batch_complete)
         """
         # Get pattern and filter files
         pattern = get_pattern_for_preset(filter_preset, custom_pattern)
