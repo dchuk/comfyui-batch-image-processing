@@ -17,6 +17,7 @@ Decimal phases appear between their surrounding integers in numeric order.
 - [x] **Phase 3: Batch Iteration** - Queue-per-image execution pattern
 - [x] **Phase 3.1: Native Queue Control** - Remove Impact Pack dependency (INSERTED)
 - [x] **Phase 4: Progress & Monitoring** - Progress display and image previews
+- [ ] **Phase 5: Live UI Updates** - Fix frontend updates during batch iteration (from UAT)
 
 ## Phase Details
 
@@ -93,10 +94,25 @@ Plans:
 - [x] 04-01-PLAN.md - Extend BatchImageSaver with passthrough outputs, create BatchProgressFormatter node
 - [x] 04-02-PLAN.md - Node registration and comprehensive tests
 
+### Phase 5: Live UI Updates
+**Goal**: Frontend UI updates in real-time during batch processing iterations
+**Depends on**: Phase 4
+**Requirements**: Derived from UAT gaps - UI shows stale data after first iteration
+**Success Criteria** (what must be TRUE):
+  1. INDEX, TOTAL_COUNT outputs update visually for each batch iteration
+  2. Progress text (BatchProgressFormatter) updates for each image processed
+  3. Preview nodes show current image, not just first image
+  4. SAVED_FILENAME and SAVED_PATH update for each iteration
+**Root Cause**: trigger_next_queue() generates new client_id; ComfyUI sends execution_success with broadcast=False to original client_id only
+**Plans:** TBD
+
+Plans:
+- [ ] 05-01-PLAN.md - Capture and reuse frontend client_id in programmatic queue submissions
+
 ## Progress
 
 **Execution Order:**
-Phases execute in numeric order: 1 -> 2 -> 3 -> 3.1 -> 4
+Phases execute in numeric order: 1 -> 2 -> 3 -> 3.1 -> 4 -> 5
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
@@ -105,7 +121,13 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 3.1 -> 4
 | 3. Batch Iteration | 2/2 | Complete | 2026-02-01 |
 | 3.1 Native Queue Control | 1/1 | Complete | 2026-02-02 |
 | 4. Progress & Monitoring | 2/2 | Complete | 2026-02-02 |
+| 5. Live UI Updates | 0/1 | Pending | - |
+
+## Documentation Notes
+
+**INPUT_DIRECTORY Output Clarification:**
+The `INPUT_DIRECTORY` output from BatchImageLoader is metadata-only (folder name). It should NOT be wired to BatchImageSaver's `output_directory` input, as this creates nested directories (e.g., `output/input/file.png`). Leave `output_directory` empty to save directly to ComfyUI's output folder.
 
 ---
 *Roadmap created: 2025-02-01*
-*Last updated: 2026-02-02 - Phase 4 complete, milestone v1.0 complete*
+*Last updated: 2026-02-02 - Phase 5 added from UAT findings*
