@@ -151,6 +151,9 @@ class BatchImageLoader:
         Returns:
             Tuple of (image_tensor, total_count, index, filename, basename, status, batch_complete)
         """
+        # Normalize directory path for consistent state lookup
+        directory = os.path.normpath(directory)
+
         # Get pattern and filter files
         pattern = get_pattern_for_preset(filter_preset, custom_pattern)
         files = filter_files_by_patterns(directory, pattern)
@@ -160,32 +163,125 @@ class BatchImageLoader:
 
         total_count = len(files)
 
-        # Handle wraparound for iteration
-        actual_index = current_index % total_count if total_count > 0 else 0
+        # === STATE MANAGEMENT ===
 
-        # Try to load the image at the current index
-        # If it fails, try subsequent files
-        attempts = 0
-        last_error = None
+        # Get or initialize state for this directory
+        state = IterationState.get_state(directory)
 
-        while attempts < total_count:
-            try_index = (actual_index + attempts) % total_count
-            filename = files[try_index]
-            filepath = os.path.join(directory, filename)
+        # Check for directory change - if last_directory exists and differs, reset
+        # Note: first run won't have last_directory, so we skip this check
+        if "last_directory" in state:
+            if IterationState.check_directory_change(directory, state["last_directory"]):
+                IterationState.reset(directory)
+                state = IterationState.get_state(directory)
 
-            try:
-                image_tensor = load_image_as_tensor(filepath)
-                # Success - extract basename (filename without extension)
-                basename = os.path.splitext(filename)[0]
+        # Track current directory for next execution's change detection
+        state["last_directory"] = os.path.normpath(os.path.abspath(directory))
 
-                # Return 1-based index for user display
-                return (image_tensor, total_count, try_index + 1, filename, basename)
+        # Handle iteration_mode
+        if iteration_mode == "Reset":
+            IterationState.reset(directory)
+            state = IterationState.get_state(directory)
 
-            except Exception as e:
-                last_error = e
-                attempts += 1
+        # Handle start_index: If start_index > 0 and state.index == 0, use start_index
+        if start_index > 0 and state["index"] == 0:
+            state["index"] = start_index
 
-        # All files failed to load
-        raise RuntimeError(
-            f"Failed to load any images from directory. Last error: {last_error}"
+        # Set total count for this batch
+        IterationState.set_total_count(directory, total_count)
+
+        # Set status to processing at start
+        IterationState.set_status(directory, "processing")
+
+        # === PROCESSING FLOW ===
+
+        # Get current index from state (0-based)
+        current_index = state["index"]
+
+        # Handle wraparound (in case index > total_count from previous run with more files)
+        if current_index >= total_count:
+            current_index = 0
+            state["index"] = 0
+
+        # Load image with error handling
+        return self._load_with_error_handling(
+            directory=directory,
+            files=files,
+            current_index=current_index,
+            total_count=total_count,
+            error_handling=error_handling,
+            skip_count=0,
         )
+
+    def _load_with_error_handling(
+        self,
+        directory: str,
+        files: list,
+        current_index: int,
+        total_count: int,
+        error_handling: str,
+        skip_count: int,
+    ):
+        """
+        Load image at current index with error handling.
+
+        Args:
+            directory: Path to the image directory
+            files: Sorted list of filenames
+            current_index: Current 0-based index
+            total_count: Total number of files
+            error_handling: "Stop on error" or "Skip on error"
+            skip_count: Number of files skipped so far (for infinite loop protection)
+
+        Returns:
+            Tuple of (image_tensor, total_count, index, filename, basename, status, batch_complete)
+        """
+        # Infinite loop protection
+        if skip_count >= total_count:
+            raise RuntimeError("Failed to load any images from directory - all files skipped or failed")
+
+        filename = files[current_index]
+        filepath = os.path.join(directory, filename)
+
+        try:
+            image_tensor = load_image_as_tensor(filepath)
+        except Exception as e:
+            if error_handling == "Stop on error":
+                raise RuntimeError(f"Failed to load image {filename}: {e}") from e
+            else:
+                # Skip on error: advance index and try next image
+                IterationState.advance(directory)
+                next_index = (current_index + 1) % total_count
+                return self._load_with_error_handling(
+                    directory=directory,
+                    files=files,
+                    current_index=next_index,
+                    total_count=total_count,
+                    error_handling=error_handling,
+                    skip_count=skip_count + 1,
+                )
+
+        # Success - extract basename (filename without extension)
+        basename = os.path.splitext(filename)[0]
+
+        # Determine if this is the last image
+        batch_complete = current_index >= total_count - 1
+
+        # Queue control based on batch_complete
+        if batch_complete:
+            # Stop Auto Queue and reset for re-run
+            stop_auto_queue()
+            IterationState.wrap_index(directory)
+            status = "completed"
+            IterationState.set_status(directory, "completed")
+        else:
+            # Trigger next queue item
+            trigger_next_queue()
+            status = "processing"
+
+        # Advance index AFTER successful load
+        # This means interrupt during load leaves index unchanged (Continue mode resumes here)
+        IterationState.advance(directory)
+
+        # Return 0-based index
+        return (image_tensor, total_count, current_index, filename, basename, status, batch_complete)
