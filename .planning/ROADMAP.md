@@ -15,6 +15,7 @@ Decimal phases appear between their surrounding integers in numeric order.
 - [x] **Phase 1: Foundation** - Node infrastructure, basic image loading ✓
 - [x] **Phase 2: Image Saving** - Batch saver with format options and filename customization ✓
 - [x] **Phase 3: Batch Iteration** - Queue-per-image execution pattern ✓
+- [ ] **Phase 3.1: Native Queue Control** - Remove Impact Pack dependency (INSERTED)
 - [ ] **Phase 4: Progress & Monitoring** - Progress display and image previews
 
 ## Phase Details
@@ -64,9 +65,23 @@ Plans:
 - [x] 03-01-PLAN.md - Iteration state management and queue control utilities ✓
 - [x] 03-02-PLAN.md - Extend BatchImageLoader with iteration support ✓
 
+### Phase 3.1: Native Queue Control (INSERTED)
+**Goal**: Batch iteration works without any external node dependencies (no Impact Pack required)
+**Depends on**: Phase 3
+**Requirements**: Derived from Phase 3 gap - current implementation uses Impact Pack events
+**Success Criteria** (what must be TRUE):
+  1. BatchImageLoader triggers next queue execution using native ComfyUI API (POST /prompt)
+  2. Batch completion stops iteration without requiring Impact Pack's stop-auto-queue event
+  3. All existing Phase 3 tests continue to pass
+  4. No external custom node dependencies required for batch iteration
+**Plans:** 1 plan
+
+Plans:
+- [ ] 03.1-01-PLAN.md - Native HTTP POST queue control, hidden inputs for workflow access
+
 ### Phase 4: Progress & Monitoring
 **Goal**: Users have visibility into batch progress with file mappings and image previews
-**Depends on**: Phase 3
+**Depends on**: Phase 3.1
 **Requirements**: PROG-01, PROG-02, PROG-03, PROG-04, PROG-05
 **Success Criteria** (what must be TRUE):
   1. User sees a progress indicator showing "X of Y images processed"
@@ -81,15 +96,16 @@ Plans:
 ## Progress
 
 **Execution Order:**
-Phases execute in numeric order: 1 -> 2 -> 3 -> 4
+Phases execute in numeric order: 1 -> 2 -> 3 -> 3.1 -> 4
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
 | 1. Foundation | 2/2 | ✓ Complete | 2026-02-01 |
 | 2. Image Saving | 2/2 | ✓ Complete | 2026-02-01 |
 | 3. Batch Iteration | 2/2 | ✓ Complete | 2026-02-01 |
+| 3.1 Native Queue Control | 0/1 | Not started | - |
 | 4. Progress & Monitoring | 0/2 | Not started | - |
 
 ---
 *Roadmap created: 2025-02-01*
-*Last updated: 2026-02-01 - Phase 3 complete*
+*Last updated: 2026-02-02 - Phase 3.1 planned*

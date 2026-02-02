@@ -145,6 +145,8 @@ def resolve_output_directory(
 
     Args:
         output_dir: User-specified output directory (empty = use default)
+                    If relative path (e.g., "images"), prepends ComfyUI output dir.
+                    If absolute path (e.g., "/path/to/output"), uses directly.
         source_dir: Source directory path (for subfolder naming)
         default_output_func: Callable that returns ComfyUI output directory
                             (e.g., lambda: folder_paths.get_output_directory())
@@ -153,8 +155,23 @@ def resolve_output_directory(
         Resolved output directory path (created if needed)
     """
     if output_dir and output_dir.strip():
-        # User specified directory: use directly
-        resolved = output_dir.strip()
+        stripped = output_dir.strip()
+        # Check if it's a relative path (not absolute)
+        # This handles cases where output_dir is wired from loader's input_directory_name
+        # e.g., "images" should become "output/images"
+        if not os.path.isabs(stripped):
+            # Relative path: prepend ComfyUI output directory
+            if default_output_func is not None:
+                comfy_output = default_output_func()
+                if comfy_output:
+                    resolved = os.path.join(comfy_output, stripped)
+                else:
+                    resolved = stripped
+            else:
+                resolved = stripped
+        else:
+            # Absolute path: use directly
+            resolved = stripped
     else:
         # No output specified: ComfyUI output + source folder name
         if default_output_func is not None:

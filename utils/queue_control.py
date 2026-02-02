@@ -38,53 +38,99 @@ def get_server_address() -> tuple:
     return ("127.0.0.1", 8188)
 
 
-def trigger_next_queue(prompt: dict = None) -> bool:
+def trigger_next_queue(prompt: dict = None, unique_id: str = None) -> bool:
     """Trigger ComfyUI to queue another workflow execution.
 
     Uses native HTTP POST to /prompt endpoint. Does not require
     Impact Pack or any external custom nodes.
 
+    Injects a new queue_nonce into the prompt to bust ComfyUI's execution cache.
+
     Args:
         prompt: The complete workflow prompt dict (from hidden PROMPT input).
                 If None or empty, returns False.
+        unique_id: The node ID of the BatchImageLoader (to inject nonce).
 
     Returns:
         True if queue trigger was sent, False if failed or unavailable
     """
+    import copy
+    import time
+
+    print(f"\n[queue_control] ===== trigger_next_queue called =====")
+
     # Early return if no prompt to queue
     if not prompt:
+        print(f"[queue_control] REJECTED: prompt is None or empty")
         return False
+
+    print(f"[queue_control] prompt has {len(prompt)} keys: {list(prompt.keys())[:5]}...")
+
+    # Deep copy prompt and inject new queue_nonce to bust cache
+    prompt = copy.deepcopy(prompt)
+    nonce = int(time.time() * 1000)  # Millisecond timestamp as nonce
+
+    if unique_id and unique_id in prompt:
+        if "inputs" not in prompt[unique_id]:
+            prompt[unique_id]["inputs"] = {}
+        prompt[unique_id]["inputs"]["queue_nonce"] = nonce
+        print(f"[queue_control] Injected queue_nonce={nonce} into node {unique_id}")
+    else:
+        print(f"[queue_control] WARNING: Could not inject nonce (unique_id={unique_id} not in prompt)")
 
     # Early return if running outside ComfyUI (tests, etc.)
     if not HAS_SERVER:
+        print(f"[queue_control] REJECTED: HAS_SERVER is False (running outside ComfyUI)")
         return False
 
     # Early return if server not initialized
-    if PromptServer is None or PromptServer.instance is None:
+    if PromptServer is None:
+        print(f"[queue_control] REJECTED: PromptServer is None")
+        return False
+
+    if PromptServer.instance is None:
+        print(f"[queue_control] REJECTED: PromptServer.instance is None")
         return False
 
     address, port = get_server_address()
+    print(f"[queue_control] Server address: {address}:{port}")
 
+    client_id = str(uuid.uuid4())
     payload = {
         "prompt": prompt,
-        "client_id": str(uuid.uuid4()),
+        "client_id": client_id,
     }
+
+    url = f"http://{address}:{port}/prompt"
+    print(f"[queue_control] POSTing to {url}")
+    print(f"[queue_control] client_id: {client_id}")
+    print(f"[queue_control] payload size: {len(json.dumps(payload))} bytes")
 
     try:
         data = json.dumps(payload).encode("utf-8")
         req = urllib.request.Request(
-            f"http://{address}:{port}/prompt",
+            url,
             data=data,
             headers={"Content-Type": "application/json"},
             method="POST",
         )
         with urllib.request.urlopen(req, timeout=5) as response:
-            return response.status == 200
-    except urllib.error.URLError:
+            status = response.status
+            print(f"[queue_control] Response status: {status}")
+            if status == 200:
+                print(f"[queue_control] SUCCESS: Queue triggered")
+                return True
+            else:
+                print(f"[queue_control] FAILED: Non-200 status")
+                return False
+    except urllib.error.URLError as e:
+        print(f"[queue_control] FAILED: URLError - {e}")
         return False
-    except urllib.error.HTTPError:
+    except urllib.error.HTTPError as e:
+        print(f"[queue_control] FAILED: HTTPError - {e.code} {e.reason}")
         return False
-    except Exception:
+    except Exception as e:
+        print(f"[queue_control] FAILED: Exception - {type(e).__name__}: {e}")
         return False
 
 

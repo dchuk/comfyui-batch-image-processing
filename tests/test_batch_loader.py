@@ -152,7 +152,7 @@ class TestLoadImage:
         """TOTAL_COUNT matches number of matching files."""
         loader = BatchImageLoader()
         result = loader.load_image(temp_real_image_dir, "All Images")
-        total_count = result[1]
+        total_count = result[6]  # TOTAL_COUNT at index 6
         # temp_real_image_dir has 3 PNG files
         assert total_count == 3
 
@@ -160,40 +160,41 @@ class TestLoadImage:
         """INDEX is 0-based (first image returns 0)."""
         loader = BatchImageLoader()
         result = loader.load_image(temp_real_image_dir, "All Images")
-        index = result[2]
+        index = result[5]  # INDEX at index 5
         assert index == 0
 
     def test_filename_includes_extension(self, temp_real_image_dir):
         """FILENAME includes the file extension."""
         loader = BatchImageLoader()
         result = loader.load_image(temp_real_image_dir, "All Images")
-        filename = result[3]
+        filename = result[4]  # FILENAME at index 4
         assert "." in filename
         assert filename.endswith(".png")
 
     def test_basename_excludes_extension(self, temp_real_image_dir):
-        """BASENAME excludes the file extension."""
+        """INPUT_BASE_NAME excludes the file extension."""
         loader = BatchImageLoader()
         result = loader.load_image(temp_real_image_dir, "All Images")
-        basename = result[4]
+        basename = result[2]  # INPUT_BASE_NAME at index 2
         assert "." not in basename
         assert basename.startswith("img")
 
     def test_source_directory_output_exists(self, temp_real_image_dir):
-        """SOURCE_DIRECTORY output is a string matching the input directory."""
+        """INPUT_DIRECTORY output is the folder name only."""
         loader = BatchImageLoader()
         result = loader.load_image(temp_real_image_dir, "All Images")
-        source_directory = result[5]
-        assert isinstance(source_directory, str)
-        # Should match the normalized input directory
+        input_directory_name = result[1]  # INPUT_DIRECTORY at index 1
+        assert isinstance(input_directory_name, str)
+        # Should be just the folder name, not the full path
         import os
-        assert source_directory == os.path.normpath(temp_real_image_dir)
+        expected_name = os.path.basename(os.path.normpath(temp_real_image_dir))
+        assert input_directory_name == expected_name
 
     def test_original_format_output_exists(self, temp_real_image_dir):
-        """ORIGINAL_FORMAT output is a string with the file extension."""
+        """INPUT_FILE_TYPE output is a string with the file extension."""
         loader = BatchImageLoader()
         result = loader.load_image(temp_real_image_dir, "All Images")
-        original_format = result[6]
+        original_format = result[3]  # INPUT_FILE_TYPE at index 3
         assert isinstance(original_format, str)
         assert original_format == "png"  # Test images are PNG
 
@@ -201,7 +202,7 @@ class TestLoadImage:
         """STATUS output is a string."""
         loader = BatchImageLoader()
         result = loader.load_image(temp_real_image_dir, "All Images")
-        status = result[7]
+        status = result[7]  # STATUS at index 7
         assert isinstance(status, str)
         assert status in ["processing", "completed"]
 
@@ -209,7 +210,7 @@ class TestLoadImage:
         """BATCH_COMPLETE output is a boolean."""
         loader = BatchImageLoader()
         result = loader.load_image(temp_real_image_dir, "All Images")
-        batch_complete = result[8]
+        batch_complete = result[8]  # BATCH_COMPLETE at index 8
         assert isinstance(batch_complete, bool)
 
 
@@ -222,8 +223,8 @@ class TestNaturalSortOrder:
 
         # First load - should be img1.png at index 0
         result = loader.load_image(temp_real_image_dir, "All Images")
-        assert result[3] == "img1.png"
-        assert result[2] == 0  # INDEX is 0-based
+        assert result[4] == "img1.png"  # FILENAME at index 4
+        assert result[5] == 0  # INDEX at index 5
 
     def test_index_advances_with_state(self, temp_real_image_dir):
         """Index advances via internal state, not input parameter."""
@@ -231,13 +232,13 @@ class TestNaturalSortOrder:
 
         # First load - should be img1.png at index 0
         result = loader.load_image(temp_real_image_dir, "All Images")
-        assert result[3] == "img1.png"
-        assert result[2] == 0
+        assert result[4] == "img1.png"  # FILENAME at index 4
+        assert result[5] == 0  # INDEX at index 5
 
         # Second load - state has advanced, should be img2.png at index 1
         result = loader.load_image(temp_real_image_dir, "All Images")
-        assert result[3] == "img2.png"
-        assert result[2] == 1
+        assert result[4] == "img2.png"  # FILENAME at index 4
+        assert result[5] == 1  # INDEX at index 5
 
 
 class TestFilterPresets:
@@ -247,8 +248,8 @@ class TestFilterPresets:
         """PNG Only preset only returns PNG files."""
         loader = BatchImageLoader()
         result = loader.load_image(temp_mixed_image_dir, "PNG Only")
-        assert result[1] == 1  # Only 1 PNG file
-        assert result[3].endswith(".png")
+        assert result[6] == 1  # TOTAL_COUNT at index 6 - Only 1 PNG file
+        assert result[4].endswith(".png")  # FILENAME at index 4
 
     def test_custom_pattern_works(self, temp_mixed_image_dir):
         """Custom pattern filters files correctly."""
@@ -256,8 +257,8 @@ class TestFilterPresets:
         result = loader.load_image(
             temp_mixed_image_dir, "Custom", custom_pattern="*.jpg"
         )
-        assert result[1] == 1  # Only 1 JPG file
-        assert result[3].endswith(".jpg")
+        assert result[6] == 1  # TOTAL_COUNT at index 6 - Only 1 JPG file
+        assert result[4].endswith(".jpg")  # FILENAME at index 4
 
 
 class TestIsChanged:
@@ -289,14 +290,14 @@ class TestIterationModes:
 
         # First load with Continue mode - starts at 0
         result1 = loader.load_image(temp_real_image_dir, "All Images", "Continue")
-        assert result1[2] == 0
-        assert result1[3] == "img1.png"
+        assert result1[5] == 0  # INDEX at index 5
+        assert result1[4] == "img1.png"  # FILENAME at index 4
 
         # Second load advances to index 1 (after first load advanced state)
         # Now use Reset mode - should start from 0 again
         result2 = loader.load_image(temp_real_image_dir, "All Images", "Reset")
-        assert result2[2] == 0
-        assert result2[3] == "img1.png"
+        assert result2[5] == 0  # INDEX at index 5
+        assert result2[4] == "img1.png"  # FILENAME at index 4
 
     def test_iteration_mode_continue_preserves_position(self, temp_real_image_dir):
         """Continue mode preserves position across executions."""
@@ -304,15 +305,15 @@ class TestIterationModes:
 
         # First execution - index 0
         result1 = loader.load_image(temp_real_image_dir, "All Images", "Continue")
-        assert result1[2] == 0
+        assert result1[5] == 0  # INDEX at index 5
 
         # Second execution - index 1 (advanced by first)
         result2 = loader.load_image(temp_real_image_dir, "All Images", "Continue")
-        assert result2[2] == 1
+        assert result2[5] == 1  # INDEX at index 5
 
         # Third execution - index 2 (advanced by second)
         result3 = loader.load_image(temp_real_image_dir, "All Images", "Continue")
-        assert result3[2] == 2
+        assert result3[5] == 2  # INDEX at index 5
 
 
 class TestBatchCompletion:
@@ -362,8 +363,8 @@ class TestStartIndex:
         result = loader.load_image(
             temp_real_image_dir, "All Images", start_index=1
         )
-        assert result[2] == 1  # INDEX should be 1
-        assert result[3] == "img2.png"  # Second image
+        assert result[5] == 1  # INDEX at index 5
+        assert result[4] == "img2.png"  # FILENAME at index 4
 
     def test_start_index_only_applies_when_state_is_zero(self, temp_real_image_dir):
         """start_index only applies if current state index is 0."""
@@ -371,13 +372,13 @@ class TestStartIndex:
 
         # First load with start_index=0 (default)
         result1 = loader.load_image(temp_real_image_dir, "All Images")
-        assert result1[2] == 0
+        assert result1[5] == 0  # INDEX at index 5
 
         # Second load with start_index=1 - should NOT jump to 1 because state is already 1
         result2 = loader.load_image(
             temp_real_image_dir, "All Images", start_index=1
         )
-        assert result2[2] == 1  # Continues from state, not start_index
+        assert result2[5] == 1  # INDEX at index 5 - Continues from state, not start_index
 
 
 class TestDirectoryChange:
@@ -389,19 +390,19 @@ class TestDirectoryChange:
 
         # Load from first directory, advance index
         result1 = loader.load_image(temp_real_image_dir, "All Images")
-        assert result1[2] == 0
+        assert result1[5] == 0  # INDEX at index 5
 
         # Load again to advance to index 1
         result2 = loader.load_image(temp_real_image_dir, "All Images")
-        assert result2[2] == 1
+        assert result2[5] == 1  # INDEX at index 5
 
         # Switch to second directory - should reset
         result3 = loader.load_image(temp_mixed_image_dir, "All Images")
-        assert result3[2] == 0
+        assert result3[5] == 0  # INDEX at index 5
 
         # Switch back to first directory - should also reset (different from last)
         result4 = loader.load_image(temp_real_image_dir, "All Images")
-        assert result4[2] == 0
+        assert result4[5] == 0  # INDEX at index 5
 
 
 class TestErrorHandling:
@@ -443,7 +444,7 @@ class TestErrorHandling:
             result = loader.load_image(
                 tmpdir, "All Images", error_handling="Skip on error"
             )
-            assert result[3] == "bbb_valid.png"
+            assert result[4] == "bbb_valid.png"  # FILENAME at index 4
 
     def test_error_handling_all_files_fail(self):
         """Raises error when all files fail to load."""
@@ -477,7 +478,7 @@ class TestInterruption:
 
         # First execution
         result1 = loader.load_image(temp_real_image_dir, "All Images", "Continue")
-        assert result1[2] == 0
+        assert result1[5] == 0  # INDEX at index 5
 
         # Simulate getting state before next execution (as would happen on resume)
         state = IterationState.get_state(temp_real_image_dir)
@@ -486,7 +487,7 @@ class TestInterruption:
 
         # Second execution continues from 1
         result2 = loader.load_image(temp_real_image_dir, "All Images", "Continue")
-        assert result2[2] == 1
+        assert result2[5] == 1  # INDEX at index 5
 
     def test_interruption_reset_mode_clears_index(self, temp_real_image_dir):
         """Reset mode always clears index regardless of prior state."""
@@ -502,7 +503,7 @@ class TestInterruption:
 
         # Reset mode should start from 0
         result = loader.load_image(temp_real_image_dir, "All Images", "Reset")
-        assert result[2] == 0
+        assert result[5] == 0  # INDEX at index 5
 
 
 class TestQueueControl:
@@ -580,9 +581,9 @@ class TestIndexWraparound:
         loader.load_image(temp_real_image_dir, "All Images")  # 0
         loader.load_image(temp_real_image_dir, "All Images")  # 1
         result = loader.load_image(temp_real_image_dir, "All Images")  # 2 (last)
-        assert result[8] is True  # batch_complete
+        assert result[8] is True  # BATCH_COMPLETE at index 8
 
         # Next load should wrap to 0
         result = loader.load_image(temp_real_image_dir, "All Images")
-        assert result[2] == 0
-        assert result[3] == "img1.png"
+        assert result[5] == 0  # INDEX at index 5
+        assert result[4] == "img1.png"  # FILENAME at index 4

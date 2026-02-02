@@ -131,13 +131,51 @@ class TestHandleExistingFile:
 class TestResolveOutputDirectory:
     """Tests for resolve_output_directory function."""
 
-    def test_with_explicit_output_dir(self):
-        """When output_dir specified, use it directly."""
+    def test_with_explicit_absolute_output_dir(self):
+        """When absolute output_dir specified, use it directly."""
         with tempfile.TemporaryDirectory() as tmpdir:
             output_dir = os.path.join(tmpdir, "my_output")
             result = resolve_output_directory(output_dir, "/some/source", None)
             assert result == output_dir
             assert os.path.isdir(output_dir)
+
+    def test_with_relative_output_dir_prepends_default(self):
+        """Relative output_dir (folder name) gets prepended with default output."""
+        with tempfile.TemporaryDirectory() as tmpdir:
+
+            def mock_default():
+                return tmpdir
+
+            # "images" is a relative path (like what comes from loader's input_directory_name)
+            result = resolve_output_directory("images", "/some/source", mock_default)
+            expected = os.path.join(tmpdir, "images")
+            assert result == expected
+            assert os.path.isdir(expected)
+
+    def test_with_nested_relative_output_dir_prepends_default(self):
+        """Nested relative path gets prepended with default output."""
+        with tempfile.TemporaryDirectory() as tmpdir:
+
+            def mock_default():
+                return tmpdir
+
+            # "subdir/images" is a relative path
+            result = resolve_output_directory("subdir/images", "/some/source", mock_default)
+            expected = os.path.join(tmpdir, "subdir", "images")
+            assert result == expected
+            assert os.path.isdir(expected)
+
+    def test_with_relative_output_dir_no_default_func(self):
+        """Relative output_dir without default func uses path as-is."""
+        with tempfile.TemporaryDirectory() as tmpdir:
+            original_dir = os.getcwd()
+            os.chdir(tmpdir)
+            try:
+                result = resolve_output_directory("images", "", None)
+                assert result == "images"
+                assert os.path.isdir("images")
+            finally:
+                os.chdir(original_dir)
 
     def test_with_empty_output_dir_uses_default(self):
         """Empty output_dir uses default + source folder name."""
@@ -163,7 +201,7 @@ class TestResolveOutputDirectory:
             assert result == expected
 
     def test_creates_nested_directories(self):
-        """Creates nested output directories."""
+        """Creates nested output directories (absolute path)."""
         with tempfile.TemporaryDirectory() as tmpdir:
             nested = os.path.join(tmpdir, "a", "b", "c")
             result = resolve_output_directory(nested, "", None)

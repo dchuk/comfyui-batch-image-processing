@@ -30,15 +30,13 @@ class TestInputTypes:
         assert "image" in result["required"]
         assert result["required"]["image"][0] == "IMAGE"
 
-    def test_output_format_is_combo(self):
-        """Output format is a combo with expected options."""
+    def test_output_file_type_is_optional_string(self):
+        """Output file type is an optional STRING with default 'png'."""
         result = BatchImageSaver.INPUT_TYPES()
-        assert "output_format" in result["required"]
-        options = result["required"]["output_format"][0]
-        assert "Match original" in options
-        assert "PNG" in options
-        assert "JPG" in options
-        assert "WebP" in options
+        assert "output_file_type" in result["optional"]
+        config = result["optional"]["output_file_type"]
+        assert config[0] == "STRING"
+        assert config[1]["default"] == "png"
 
     def test_quality_is_int_with_range(self):
         """Quality is an INT with 1-100 range."""
@@ -64,11 +62,10 @@ class TestInputTypes:
         result = BatchImageSaver.INPUT_TYPES()
         optional = result["optional"]
         assert "output_directory" in optional
+        assert "output_base_name" in optional
+        assert "output_file_type" in optional
         assert "filename_prefix" in optional
         assert "filename_suffix" in optional
-        assert "original_filename" in optional
-        assert "source_directory" in optional
-        assert "original_format" in optional
 
 
 class TestClassAttributes:
@@ -103,11 +100,11 @@ class TestSaveImagePng:
         saver = BatchImageSaver()
         result = saver.save_image(
             image=tensor,
-            output_format="PNG",
+            output_file_type="png",
             quality=100,
             overwrite_mode="Overwrite",
             output_directory=temp_output_dir,
-            original_filename="test_image",
+            output_base_name="test_image",
         )
 
         # Check file was created
@@ -137,11 +134,11 @@ class TestSaveImageJpg:
         saver = BatchImageSaver()
         result = saver.save_image(
             image=tensor,
-            output_format="JPG",
+            output_file_type="jpg",
             quality=85,
             overwrite_mode="Overwrite",
             output_directory=temp_output_dir,
-            original_filename="test_jpg",
+            output_base_name="test_jpg",
         )
 
         filepath = os.path.join(temp_output_dir, "test_jpg.jpg")
@@ -163,11 +160,11 @@ class TestSaveImageWebp:
         saver = BatchImageSaver()
         result = saver.save_image(
             image=tensor,
-            output_format="WebP",
+            output_file_type="webp",
             quality=90,
             overwrite_mode="Overwrite",
             output_directory=temp_output_dir,
-            original_filename="test_webp",
+            output_base_name="test_webp",
         )
 
         filepath = os.path.join(temp_output_dir, "test_webp.webp")
@@ -178,40 +175,42 @@ class TestSaveImageWebp:
         img.close()
 
 
-class TestMatchOriginalFormat:
-    """Tests for 'Match original' format option."""
+class TestJpegExtensionPreserved:
+    """Tests for preserving .jpeg extension."""
 
-    def test_match_original_jpg(self, temp_output_dir):
-        """Match original with jpg format creates .jpg file."""
+    def test_jpeg_extension_preserved(self, temp_output_dir):
+        """Jpeg file type creates .jpeg file (not .jpg)."""
         tensor = torch.ones(1, 50, 50, 3, dtype=torch.float32) * 0.5
 
         saver = BatchImageSaver()
         result = saver.save_image(
             image=tensor,
-            output_format="Match original",
+            output_file_type="jpeg",
             quality=100,
             overwrite_mode="Overwrite",
             output_directory=temp_output_dir,
-            original_filename="photo",
-            original_format="jpg",
+            output_base_name="photo",
         )
 
-        filepath = os.path.join(temp_output_dir, "photo.jpg")
-        assert os.path.exists(filepath)
+        # Should be .jpeg, NOT .jpg
+        filepath = os.path.join(temp_output_dir, "photo.jpeg")
+        assert os.path.exists(filepath), "Expected .jpeg extension to be preserved"
+        # Verify .jpg was NOT created
+        jpg_path = os.path.join(temp_output_dir, "photo.jpg")
+        assert not os.path.exists(jpg_path), "Should not normalize .jpeg to .jpg"
 
-    def test_match_original_defaults_to_png(self, temp_output_dir):
-        """Match original without format defaults to PNG."""
+    def test_empty_file_type_defaults_to_png(self, temp_output_dir):
+        """Empty file type defaults to PNG."""
         tensor = torch.ones(1, 50, 50, 3, dtype=torch.float32)
 
         saver = BatchImageSaver()
         result = saver.save_image(
             image=tensor,
-            output_format="Match original",
+            output_file_type="",  # Empty format
             quality=100,
             overwrite_mode="Overwrite",
             output_directory=temp_output_dir,
-            original_filename="noformat",
-            original_format="",  # Empty format
+            output_base_name="noformat",
         )
 
         filepath = os.path.join(temp_output_dir, "noformat.png")
@@ -228,11 +227,11 @@ class TestFilenameConstruction:
         saver = BatchImageSaver()
         saver.save_image(
             image=tensor,
-            output_format="PNG",
+            output_file_type="png",
             quality=100,
             overwrite_mode="Overwrite",
             output_directory=temp_output_dir,
-            original_filename="photo",
+            output_base_name="photo",
             filename_prefix="upscaled_",
         )
 
@@ -246,11 +245,11 @@ class TestFilenameConstruction:
         saver = BatchImageSaver()
         saver.save_image(
             image=tensor,
-            output_format="PNG",
+            output_file_type="png",
             quality=100,
             overwrite_mode="Overwrite",
             output_directory=temp_output_dir,
-            original_filename="photo",
+            output_base_name="photo",
             filename_suffix="_2x",
         )
 
@@ -264,11 +263,11 @@ class TestFilenameConstruction:
         saver = BatchImageSaver()
         saver.save_image(
             image=tensor,
-            output_format="PNG",
+            output_file_type="png",
             quality=100,
             overwrite_mode="Overwrite",
             output_directory=temp_output_dir,
-            original_filename="photo",
+            output_base_name="photo",
             filename_prefix="upscaled_",
             filename_suffix="_2x",
         )
@@ -295,11 +294,11 @@ class TestOverwriteSkipMode:
         saver = BatchImageSaver()
         result = saver.save_image(
             image=tensor,
-            output_format="PNG",
+            output_file_type="png",
             quality=100,
             overwrite_mode="Skip",
             output_directory=temp_output_dir,
-            original_filename="existing",
+            output_base_name="existing",
         )
 
         # File should be unchanged
@@ -326,11 +325,11 @@ class TestOverwriteRenameMode:
         saver = BatchImageSaver()
         result = saver.save_image(
             image=tensor,
-            output_format="PNG",
+            output_file_type="png",
             quality=100,
             overwrite_mode="Rename",
             output_directory=temp_output_dir,
-            original_filename="photo",
+            output_base_name="photo",
         )
 
         # Original should still exist
@@ -356,11 +355,11 @@ class TestOverwriteRenameMode:
         saver = BatchImageSaver()
         result = saver.save_image(
             image=tensor,
-            output_format="PNG",
+            output_file_type="png",
             quality=100,
             overwrite_mode="Rename",
             output_directory=temp_output_dir,
-            original_filename="photo",
+            output_base_name="photo",
         )
 
         # Should create photo_3.png
@@ -380,17 +379,17 @@ class TestDefaultOutputDirectory:
         saver = BatchImageSaver()
         saver.save_image(
             image=tensor,
-            output_format="PNG",
+            output_file_type="png",
             quality=100,
             overwrite_mode="Overwrite",
             output_directory=nested_dir,
-            original_filename="deep",
+            output_base_name="deep",
         )
 
         assert os.path.exists(os.path.join(nested_dir, "deep.png"))
 
-    def test_default_directory_uses_source_folder_name(self, temp_output_dir):
-        """When no output_directory, uses source folder name as subfolder."""
+    def test_default_directory_uses_comfy_output(self, temp_output_dir):
+        """When no output_directory, uses ComfyUI output directory."""
         # Mock folder_paths.get_output_directory to return temp_output_dir
         import comfyui_batch_image_processing.nodes.batch_saver as batch_saver_module
 
@@ -404,34 +403,88 @@ class TestDefaultOutputDirectory:
             saver = BatchImageSaver()
             saver.save_image(
                 image=tensor,
-                output_format="PNG",
+                output_file_type="png",
                 quality=100,
                 overwrite_mode="Overwrite",
                 output_directory="",  # Empty - use default
-                original_filename="test",
-                source_directory="/path/to/vacation",  # Source folder name is "vacation"
+                output_base_name="test",
             )
 
-            # Should save to temp_output_dir/vacation/test.png
-            expected_path = os.path.join(temp_output_dir, "vacation", "test.png")
+            # Should save to temp_output_dir/test.png
+            expected_path = os.path.join(temp_output_dir, "test.png")
             assert os.path.exists(expected_path)
+
+    def test_relative_path_prepends_comfy_output(self, temp_output_dir):
+        """Relative path (wired from loader) is prepended with ComfyUI output dir."""
+        # Mock folder_paths.get_output_directory to return temp_output_dir
+        import comfyui_batch_image_processing.nodes.batch_saver as batch_saver_module
+
+        with mock.patch.object(
+            batch_saver_module, "folder_paths", create=True
+        ) as mock_folder_paths:
+            mock_folder_paths.get_output_directory.return_value = temp_output_dir
+
+            tensor = torch.ones(1, 50, 50, 3, dtype=torch.float32)
+
+            saver = BatchImageSaver()
+            saver.save_image(
+                image=tensor,
+                output_file_type="png",
+                quality=100,
+                overwrite_mode="Overwrite",
+                output_directory="images",  # Relative path (wired from loader)
+                output_base_name="test",
+            )
+
+            # Should save to temp_output_dir/images/test.png
+            expected_path = os.path.join(temp_output_dir, "images", "test.png")
+            assert os.path.exists(expected_path), f"Expected {expected_path} to exist"
+
+    def test_absolute_path_used_directly(self, temp_output_dir):
+        """Absolute path is used directly without modification."""
+        import comfyui_batch_image_processing.nodes.batch_saver as batch_saver_module
+
+        # Create a separate directory for the absolute path test
+        absolute_dir = os.path.join(temp_output_dir, "absolute_test")
+        os.makedirs(absolute_dir, exist_ok=True)
+
+        with mock.patch.object(
+            batch_saver_module, "folder_paths", create=True
+        ) as mock_folder_paths:
+            mock_folder_paths.get_output_directory.return_value = temp_output_dir
+
+            tensor = torch.ones(1, 50, 50, 3, dtype=torch.float32)
+
+            saver = BatchImageSaver()
+            saver.save_image(
+                image=tensor,
+                output_file_type="png",
+                quality=100,
+                overwrite_mode="Overwrite",
+                output_directory=absolute_dir,  # Absolute path
+                output_base_name="test",
+            )
+
+            # Should save directly to absolute_dir/test.png, NOT temp_output_dir/absolute_test/test.png
+            expected_path = os.path.join(absolute_dir, "test.png")
+            assert os.path.exists(expected_path), f"Expected {expected_path} to exist"
 
 
 class TestFallbackFilename:
     """Tests for fallback filename generation."""
 
     def test_generates_fallback_when_no_original(self, temp_output_dir):
-        """Generates output_NNNN when no original_filename provided."""
+        """Generates output_NNNN when no output_base_name provided."""
         tensor = torch.ones(1, 50, 50, 3, dtype=torch.float32)
 
         saver = BatchImageSaver()
         result = saver.save_image(
             image=tensor,
-            output_format="PNG",
+            output_file_type="png",
             quality=100,
             overwrite_mode="Overwrite",
             output_directory=temp_output_dir,
-            original_filename="",  # Empty
+            output_base_name="",  # Empty
         )
 
         # Filename should start with "output_" and have .png extension
