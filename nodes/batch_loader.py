@@ -8,6 +8,14 @@ from ..utils.iteration_state import IterationState
 from ..utils.queue_control import stop_auto_queue, trigger_next_queue
 from ..utils.sorting import natural_sort_key
 
+# Graceful import for PromptServer (ComfyUI module for live UI updates)
+try:
+    from server import PromptServer
+    HAS_SERVER = True
+except ImportError:
+    PromptServer = None
+    HAS_SERVER = False
+
 
 class BatchImageLoader:
     """
@@ -381,6 +389,23 @@ class BatchImageLoader:
         print(f"[BatchImageLoader] ===== RETURNING =====")
         print(f"[BatchImageLoader] status={status}, batch_complete={batch_complete}")
         print(f"[BatchImageLoader] Outputs: IMAGE={image_tensor.shape}, INPUT_DIRECTORY={input_directory_name}, INPUT_BASE_NAME={basename}, INPUT_FILE_TYPE={original_format}, FILENAME={filename}, INDEX={current_index}, TOTAL_COUNT={total_count}, STATUS={status}, BATCH_COMPLETE={batch_complete}")
+
+        # Broadcast INDEX/TOTAL_COUNT update to ALL connected clients (fixes batch iteration UI updates)
+        if HAS_SERVER and PromptServer is not None and PromptServer.instance is not None and unique_id is not None:
+            PromptServer.instance.send_sync(
+                "executed",
+                {
+                    "node": unique_id,
+                    "output": {
+                        "INDEX": [current_index],
+                        "TOTAL_COUNT": [total_count],
+                        "FILENAME": [filename],
+                        "STATUS": [status],
+                    },
+                },
+                sid=None  # Broadcast to ALL clients
+            )
+            print(f"[BatchImageLoader] Broadcast 'executed' event to all clients for node {unique_id}")
 
         # Return order matches RETURN_NAMES for clean wiring to BatchImageSaver
         return (image_tensor, input_directory_name, basename, original_format, filename, current_index, total_count, status, batch_complete)

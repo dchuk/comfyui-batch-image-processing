@@ -2,6 +2,7 @@
 
 import os
 import tempfile
+from unittest import mock
 from unittest.mock import patch
 
 import pytest
@@ -587,3 +588,100 @@ class TestIndexWraparound:
         result = loader.load_image(temp_real_image_dir, "All Images")
         assert result[5] == 0  # INDEX at index 5
         assert result[4] == "img1.png"  # FILENAME at index 4
+
+
+class TestBroadcastBehavior:
+    """Tests for live UI update broadcast behavior."""
+
+    def test_hidden_unique_id_declared(self):
+        """INPUT_TYPES includes hidden section with unique_id."""
+        result = BatchImageLoader.INPUT_TYPES()
+        assert "hidden" in result
+        assert "unique_id" in result["hidden"]
+        assert result["hidden"]["unique_id"] == "UNIQUE_ID"
+
+    def test_broadcasts_executed_event_when_server_available(self, temp_real_image_dir):
+        """Broadcasts 'executed' event with INDEX and TOTAL_COUNT when server is available."""
+        import comfyui_batch_image_processing.nodes.batch_loader as batch_loader_module
+
+        # Create mock PromptServer
+        mock_server_instance = mock.MagicMock()
+        mock_prompt_server = mock.MagicMock()
+        mock_prompt_server.instance = mock_server_instance
+
+        with mock.patch.object(batch_loader_module, "HAS_SERVER", True):
+            with mock.patch.object(batch_loader_module, "PromptServer", mock_prompt_server):
+                loader = BatchImageLoader()
+                result = loader.load_image(
+                    temp_real_image_dir, "All Images", unique_id="789"
+                )
+
+        # Verify send_sync was called with correct arguments
+        mock_server_instance.send_sync.assert_called_once()
+        call_args = mock_server_instance.send_sync.call_args
+        assert call_args[0][0] == "executed"  # Event type
+        assert call_args[0][1]["node"] == "789"  # Node ID
+        output = call_args[0][1]["output"]
+        assert "INDEX" in output
+        assert "TOTAL_COUNT" in output
+        assert "FILENAME" in output
+        assert "STATUS" in output
+        assert call_args[1]["sid"] is None  # Broadcast to ALL clients
+
+    def test_broadcast_includes_index_and_total(self, temp_real_image_dir):
+        """Broadcast output dict contains correct INDEX and TOTAL_COUNT values."""
+        import comfyui_batch_image_processing.nodes.batch_loader as batch_loader_module
+
+        mock_server_instance = mock.MagicMock()
+        mock_prompt_server = mock.MagicMock()
+        mock_prompt_server.instance = mock_server_instance
+
+        with mock.patch.object(batch_loader_module, "HAS_SERVER", True):
+            with mock.patch.object(batch_loader_module, "PromptServer", mock_prompt_server):
+                loader = BatchImageLoader()
+                result = loader.load_image(
+                    temp_real_image_dir, "All Images", unique_id="test123"
+                )
+
+        # Verify broadcast values match return values
+        call_args = mock_server_instance.send_sync.call_args
+        output = call_args[0][1]["output"]
+        assert output["INDEX"] == [0]  # First image, 0-based index
+        assert output["TOTAL_COUNT"] == [3]  # 3 images in temp_real_image_dir
+        assert output["FILENAME"] == ["img1.png"]  # First file in natural sort order
+        assert output["STATUS"] == ["processing"]  # Not last image
+
+    def test_no_broadcast_without_unique_id(self, temp_real_image_dir):
+        """No broadcast when unique_id is None."""
+        import comfyui_batch_image_processing.nodes.batch_loader as batch_loader_module
+
+        mock_server_instance = mock.MagicMock()
+        mock_prompt_server = mock.MagicMock()
+        mock_prompt_server.instance = mock_server_instance
+
+        with mock.patch.object(batch_loader_module, "HAS_SERVER", True):
+            with mock.patch.object(batch_loader_module, "PromptServer", mock_prompt_server):
+                loader = BatchImageLoader()
+                result = loader.load_image(
+                    temp_real_image_dir, "All Images", unique_id=None
+                )
+
+        # send_sync should NOT have been called
+        mock_server_instance.send_sync.assert_not_called()
+
+    def test_no_crash_without_server(self, temp_real_image_dir):
+        """No crash when HAS_SERVER is False (default test environment)."""
+        import comfyui_batch_image_processing.nodes.batch_loader as batch_loader_module
+
+        # Ensure HAS_SERVER is False (simulating test environment)
+        with mock.patch.object(batch_loader_module, "HAS_SERVER", False):
+            with mock.patch.object(batch_loader_module, "PromptServer", None):
+                loader = BatchImageLoader()
+                # Should not raise an exception
+                result = loader.load_image(
+                    temp_real_image_dir, "All Images", unique_id="abc"
+                )
+
+        # Should still return valid result
+        assert isinstance(result, tuple)
+        assert len(result) == 9
