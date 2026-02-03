@@ -17,7 +17,7 @@ Decimal phases appear between their surrounding integers in numeric order.
 - [x] **Phase 3: Batch Iteration** - Queue-per-image execution pattern
 - [x] **Phase 3.1: Native Queue Control** - Remove Impact Pack dependency (INSERTED)
 - [x] **Phase 4: Progress & Monitoring** - Progress display and image previews
-- [ ] **Phase 5: Live UI Updates** - Fix frontend updates during batch iteration (from UAT)
+- [x] **Phase 5: Live UI Updates** - Fix frontend updates during batch iteration (from UAT)
 
 ## Phase Details
 
@@ -107,7 +107,7 @@ Plans:
 **Plans:** 1 plan
 
 Plans:
-- [ ] 05-01-PLAN.md - Broadcast UI updates via PromptServer.send_sync with sid=None
+- [x] 05-01-PLAN.md - Broadcast UI updates via PromptServer.send_sync with sid=None
 
 ## Progress
 
@@ -121,7 +121,7 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 3.1 -> 4 -> 5
 | 3. Batch Iteration | 2/2 | Complete | 2026-02-01 |
 | 3.1 Native Queue Control | 1/1 | Complete | 2026-02-02 |
 | 4. Progress & Monitoring | 2/2 | Complete | 2026-02-02 |
-| 5. Live UI Updates | 0/1 | Planned | - |
+| 5. Live UI Updates | 1/1 | Complete | 2026-02-02 |
 
 ## Documentation Notes
 
@@ -130,4 +130,4 @@ The `INPUT_DIRECTORY` output from BatchImageLoader is metadata-only (folder name
 
 ---
 *Roadmap created: 2025-02-01*
-*Last updated: 2026-02-02 - Phase 5 planned*
+*Last updated: 2026-02-02 - Phase 5 complete, milestone complete*
